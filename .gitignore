@@ -1,0 +1,9 @@
+data/
+DS_Store
+Thumbs.db
+
+
+.env
+!.env.example
+**/postgres/.env
+**/rabbit/.env
