@@ -1,0 +1,20 @@
+{
+  "docker.showStartPage": false,
+
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml",
+    "Dockerfile*": "dockerfile"
+  },
+
+  "[dockerfile]": {
+    "editor.formatOnSave": false
+  },
+
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  "workbench.editor.enablePreview": false
+}

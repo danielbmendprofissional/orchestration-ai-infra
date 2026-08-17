@@ -1,0 +1,13 @@
+{
+  "gitlens.currentLine.enabled": true,
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.codeLens.enabled": false,
+
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+
+  "todo-tree.general.tags": ["TODO", "FIXME", "HACK", "BUG", "XXX"],
+
+  "cSpell.language": "en,pt,pt-BR",
+
+  "workbench.editor.enablePreview": false
+}

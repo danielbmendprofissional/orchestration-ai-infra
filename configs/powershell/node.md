@@ -2,7 +2,8 @@
 
 ## DESINTALAR TUDO
 
-# PowerShell como Admin
+- Entre no PowerShell como Admin
+
 ```
 npm uninstall -g @angular/cli
 
@@ -20,6 +21,8 @@ Remover esses mesmos caminhos no explorer path fisico.
 * [URL](https://github.com/coreybutler/nvm-windows/releases)
 
 - Download nvm-setup.exe
+
+- nvm use xxxx
 
 - Feche o PowerShell e abra novamente como Admin:
 
