@@ -1,5 +1,19 @@
 # Infra
 
+Serviços de contexto compartilhados, rodando permanentemente na máquina do Daniel (uma instância só, não um compose por projeto) — Postgres, pgAdmin, Redis, RabbitMQ e Keycloak, em `container/docker-compose.yml`. Cada projeto novo (ex: os nascidos do `ai-base`) aponta sua connection string pra essa instância em vez de subir containers próprios; um banco por projeto dentro do mesmo Postgres, seguindo o padrão de `banco/valuto/init-db.sql` (schemas próprios via `\c <projeto>`).
+
+## Decisão registrada em 2026-09-05 (ver `ai-base/docs/agents/infra-local.md` pro registro completo do lado do `ai-base`)
+
+- **DefectDojo vai unificar aqui.** Hoje ele roda separado (clone à parte do `django-DefectDojo`, documentado em `Security-Scanner/README.md`). A decisão foi trazê-lo pra dentro deste `docker-compose.yml`, como mais um serviço permanente — **ainda não implementado**. Falta decidir se ele reaproveita o Postgres/Redis já existentes aqui ou mantém instâncias próprias.
+- **Kubernetes segue como meta**, mesmo não existindo nenhum manifesto ainda — hoje isto aqui é só Docker Compose de dev local (ver comentário `shm_size: 128mb # valor de dev local` no compose).
+- **`banco/valuto/` é específico do projeto Valuto**, não genérico — mesmo padrão de separação genérico/específico usado no `template-ci` (lá é `personal/` vs. `tce/`). Projetos novos ganham seu próprio `banco/<projeto>/init-db.sql` ao lado, não em cima do que já existe.
+
+---
+
+*O restante deste arquivo é o boilerplate padrão gerado pelo GitLab na criação do repositório — ainda não foi substituído por documentação própria.*
+
+# Infra
+
 
 
 ## Getting started
