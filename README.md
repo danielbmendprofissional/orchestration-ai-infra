@@ -7,6 +7,13 @@ Serviços de contexto compartilhados, rodando permanentemente na máquina do Dan
 - **DefectDojo vai unificar aqui.** Hoje ele roda separado (clone à parte do `django-DefectDojo`, documentado em `Security-Scanner/README.md`). A decisão foi trazê-lo pra dentro deste `docker-compose.yml`, como mais um serviço permanente — **ainda não implementado**. Falta decidir se ele reaproveita o Postgres/Redis já existentes aqui ou mantém instâncias próprias.
 - **Kubernetes segue como meta**, mesmo não existindo nenhum manifesto ainda — hoje isto aqui é só Docker Compose de dev local (ver comentário `shm_size: 128mb # valor de dev local` no compose).
 - **`banco/valuto/` é específico do projeto Valuto**, não genérico — mesmo padrão de separação genérico/específico usado no `template-ci` (lá é `personal/` vs. `tce/`). Projetos novos ganham seu próprio `banco/<projeto>/init-db.sql` ao lado, não em cima do que já existe.
+- **Canônico de `banco/valuto/init-db.sql`: o repo do `valuto`.** O arquivo real que os devs editam é `valuto/backend/infra/banco/01-init-valuto-db.sql` (mais documentado, com comentários de ADR e o bloco de teste manual de isolamento entre schemas) — a cópia aqui em `infra/` é só o que o Docker de fato monta via `docker-entrypoint-initdb.d`. Os dois já divergiram uma vez (comentários), então a convenção agora é: sempre que o script do `valuto` mudar, sincronizar aqui manualmente (repos vivem como pastas irmãs na mesma máquina):
+
+  ```powershell
+  Copy-Item "..\valuto\backend\infra\banco\01-init-valuto-db.sql" "banco\valuto\init-db.sql" -Force
+  ```
+
+  Sem automação por enquanto (1 projeto, poucas mudanças de schema) — se isso passar a doer, evolui pra um `sync-bancos.ps1` que copia de todos os `banco/<projeto>/` dos repos-projeto de uma vez. *(Decisão 2026-09-07.)*
 
 ---
 

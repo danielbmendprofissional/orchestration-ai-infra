@@ -1,6 +1,16 @@
 -- =====================================================================================
 -- Valuto — Init Script (DEV)
+-- Roda automaticamente via docker-entrypoint-initdb.d na 1a inicialização do container.
+-- Em hml/prd: mesmo script, executado manualmente (ou via pipeline) na instância
+-- Postgres daquele namespace AKS, com senhas vindas do Azure Key Vault (ADR-016).
+--
+-- Modelo: 1 banco "valuto" por ambiente. Módulos = schemas (ADR-002).
+-- Cada módulo tem 2 roles:
+--   vp_owner_{module} -> dono do schema, usado em MIGRATIONS (DDL)
+--   vp_usu_{module}   -> usado pela API em runtime (DML apenas, sem DDL — ADR-026)
 -- =====================================================================================
+
+-- O banco "valuto" já é criado via POSTGRES_DB no .env — conectar nele.
 \c valuto
 
 -- =====================================================================================
@@ -126,7 +136,9 @@ SELECT
     USAGE ON SEQUENCES TO vp_usu_notifications;
 
 -- =====================================================================================
--- WOLVERINE (outbox / mensageria )
+-- WOLVERINE (outbox / mensageria — schema compartilhado, ADR-007)
+-- Todos os módulos publicam/consomem mensagens através deste schema.
+-- Role própria, sem vínculo a um módulo específico.
 -- =====================================================================================
 CREATE ROLE vp_owner_wolverine LOGIN PASSWORD 'owner_wolverine_dev';
 
@@ -149,9 +161,17 @@ ALTER DEFAULT PRIVILEGES FOR ROLE vp_owner_wolverine IN SCHEMA wolverine
 GRANT
 SELECT, USAGE ON SEQUENCES TO vp_usu_wolverine;
 
+-- Cada vp_usu_wolverine precisa ler/escrever no schema wolverine independente do módulo
+-- que está publicando/consumindo a mensagem (mensageria in-process no monolito).
 GRANT vp_usu_wolverine TO vp_usu_identity,
 vp_usu_financial,
 vp_usu_personal,
 vp_usu_calendar,
 vp_usu_notifications;
+
+-- =====================================================================================
+-- TESTE DE ISOLAMENTO (rodar manualmente, não faz parte do init)
+-- Conectar como vp_usu_financial e tentar acessar schema de outro módulo:
+--   SET search_path TO identity;
+--   SELECT * FROM identity.users;   -- deve falhar: permission denied for schema identity
 -- =====================================================================================
