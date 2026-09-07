@@ -7,3 +7,5 @@ Thumbs.db
 !.env.example
 **/postgres/.env
 **/rabbit/.env
+
+**/.env
