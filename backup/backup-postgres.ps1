@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 
 $containerName = "postgres"
-$pgUser = "postgres"  # ou o POSTGRES_USER do seu .env
+$pgUser = (docker exec $containerName printenv POSTGRES_USER).Trim()
 $backupRoot = "C:\backups\postgres"
 $driveRoot = "G:\My Drive\ia\backups\postgres"
 $date = Get-Date -Format "yyyy-MM-dd"

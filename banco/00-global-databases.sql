@@ -1,2 +1,3 @@
 CREATE DATABASE keycloak;
 CREATE DATABASE valuto;
+CREATE DATABASE defectdojo;

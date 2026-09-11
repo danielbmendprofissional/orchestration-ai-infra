@@ -2,19 +2,22 @@ name: infra
 
 services:
   postgres:
-    image: postgres:17-alpine
+    build:
+      context: ./files/postgres
     container_name: postgres
     restart: unless-stopped
     shm_size: 128mb   # valor de dev local
     stop_grace_period: 1m
     env_file:
       - .env
+    command: postgres -c shared_preload_libraries=pgaudit -c pgaudit.log=ddl,write
     ports:
       - "5432:5432"
     volumes:
       - infra_pgdata:/var/lib/postgresql/data
       - ../banco/00-global-databases.sql:/docker-entrypoint-initdb.d/00-global-databases.sql:ro
       - ../banco/valuto/init-db.sql:/docker-entrypoint-initdb.d/01-init-valuto-db.sql:ro
+      - ../banco/02-enable-pgaudit.sql:/docker-entrypoint-initdb.d/02-enable-pgaudit.sql:ro
     networks:
       - infra-network
     healthcheck:
@@ -232,13 +235,29 @@ services:
     networks:
       - infra-network
 
+  falco:
+    image: falcosecurity/falco-no-driver:latest
+    container_name: falco
+    restart: unless-stopped
+    privileged: true
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/host/proc:ro
+      - /etc:/host/etc:ro
+      - /sys/kernel/debug:/sys/kernel/debug
+    environment:
+      FALCO_BPF_PROBE: ""
+    networks:
+      - infra-network
+
 volumes:
   infra_pgdata:
   infra_pgadmin_data:
   infra_redisdata:
   infra_prometheus_data:
   infra_loki_data:
-  infra_grafana_data:  
+  infra_grafana_data:
 
 networks:
   infra-network:
