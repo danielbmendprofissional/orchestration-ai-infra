@@ -1,4 +1,4 @@
-# backup-postgres.ps1
+# BACKUP DO BANCO DE DADOS LOCAL
 $ErrorActionPreference = "Stop"
 
 $containerName = "postgres"
