@@ -9,3 +9,7 @@ Thumbs.db
 **/rabbit/.env
 
 **/.env
+
+Claude outputs/*
+Claude outputs/
+Claude outputs
