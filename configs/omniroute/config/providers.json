@@ -1,0 +1,160 @@
+[
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_BAZAARLINK}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "bazaarlink",
+    "providerSpecificData": {
+      "autoSync": false
+    },
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_CLOUDFLARE_AI}",
+    "isActive": true,
+    "maxConcurrent": 0,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "cloudflare-ai",
+    "providerSpecificData": {
+      "accountId": "961d062d755337d70f6c8c38f4cdba40",
+      "customUserAgent": "",
+      "extraApiKeys": [],
+      "importFreeModelsOnly": false
+    },
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_GEMINI}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "gemini",
+    "providerSpecificData": {
+      "autoSync": false
+    },
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_GLM}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "glm",
+    "providerSpecificData": {
+      "apiRegion": "international"
+    },
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_GROQ}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "groq",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_MISTRAL}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "mistral",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_NVIDIA}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "nvidia",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_OLLAMA_CLOUD}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "ollama-cloud",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_OPENCODE_ZEN}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "opencode-zen",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_OPENROUTER}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "openrouter",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  },
+  {
+    "apiKey": "${ENV:OMNIROUTE_KEY_SAMBANOVA}",
+    "isActive": true,
+    "maxConcurrent": null,
+    "name": "main",
+    "perKeyProxyEnabled": false,
+    "priority": 1,
+    "provider": "sambanova",
+    "proxyEnabled": true,
+    "quotaVisible": true,
+    "quotaWindowThresholds": null,
+    "rateLimitOverrides": null
+  }
+]

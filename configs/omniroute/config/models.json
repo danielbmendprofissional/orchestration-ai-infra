@@ -1,0 +1,190 @@
+{
+  "custom": {
+    "cloudflare-ai": [
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "isHidden": true,
+        "name": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      },
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "isHidden": true,
+        "name": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      },
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/nvidia/nemotron-3-120b-a12b",
+        "name": "@cf/nvidia/nemotron-3-120b-a12b",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      },
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/openai/gpt-oss-120b",
+        "name": "@cf/openai/gpt-oss-120b",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      },
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/openai/gpt-oss-20b",
+        "name": "@cf/openai/gpt-oss-20b",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      },
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "name": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      },
+      {
+        "apiFormat": "chat-completions",
+        "id": "@cf/qwen/qwen3.8-27b",
+        "isHidden": false,
+        "name": "@cf/qwen/qwen3.8-27b",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      }
+    ],
+    "mistral": [
+      {
+        "apiFormat": "chat-completions",
+        "id": "mistral-large-4",
+        "isHidden": true,
+        "name": "mistral-large-4",
+        "supportedEndpoints": [
+          "chat"
+        ]
+      }
+    ]
+  },
+  "hidden": {
+    "cloudflare-ai": [
+      "@cf/meta/llama-3.2-3b-instruct",
+      "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "@cf/meta/llama-4-scout-17b-16e-instruct",
+      "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "@cf/moonshotai/kimi-k2.6",
+      "@cf/qwen/qwen2.5-coder-32b-instruct"
+    ],
+    "gemini": [
+      "antigravity-preview-05-2026",
+      "antigravity-preview-09-2026",
+      "antigravity-preview-latest",
+      "aqa",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-2.5-flash-preview-tts",
+      "gemini-2.5-pro",
+      "gemini-3-flash-preview",
+      "gemini-3.1-flash-lite",
+      "gemini-3.1-flash-lite-preview",
+      "gemini-3.1-flash-tts-preview",
+      "gemini-3.5-transcribe",
+      "gemini-3.7-flash",
+      "gemini-3.8-flash-lite-tts",
+      "gemini-3.8-flash-tts",
+      "gemini-flash-latest",
+      "gemini-flash-lite-latest",
+      "gemini-robotics-er-2-preview",
+      "lyria-realtime-exp"
+    ],
+    "groq": [
+      "canopylabs/orpheus-arabic-saudi",
+      "canopylabs/orpheus-v1-english",
+      "llama-3.3-70b-versatile",
+      "meta-llama/llama-4-scout-17b-16e-instruct",
+      "meta-llama/llama-prompt-guard-2-22m",
+      "meta-llama/llama-prompt-guard-2-86m",
+      "qwen/qwen3-32b",
+      "qwen/qwen3.6-27b",
+      "qwen/qwen3.8-27b",
+      "whisper-large-v3",
+      "whisper-large-v3-turbo"
+    ],
+    "mistral": [
+      "codestral-2508",
+      "codestral-embed",
+      "codestral-embed-2505",
+      "codestral-latest",
+      "devstral-latest",
+      "labs-leanstral-1-5",
+      "labs-leanstral-1-5-1",
+      "magistral-medium-latest",
+      "magistral-small-latest",
+      "ministral-3b-latest",
+      "ministral-8b-2512",
+      "mistral-code-latest",
+      "mistral-embed",
+      "mistral-embed-2312",
+      "mistral-large-4",
+      "mistral-large-latest",
+      "mistral-medium",
+      "mistral-medium-3-5",
+      "mistral-medium-latest",
+      "mistral-moderation-2603",
+      "mistral-ocr-2512",
+      "mistral-ocr-3",
+      "mistral-ocr-3-0",
+      "mistral-ocr-4",
+      "mistral-ocr-4-0",
+      "mistral-ocr-4-1",
+      "mistral-ocr-latest",
+      "mistral-small-latest",
+      "mistral-vibe-cli-with-tools",
+      "voxtral-mini-2602",
+      "voxtral-mini-latest",
+      "voxtral-mini-realtime-2602",
+      "voxtral-mini-realtime-latest",
+      "voxtral-mini-transcribe-realtime-2602",
+      "voxtral-mini-tts-2603",
+      "voxtral-mini-tts-latest"
+    ],
+    "nvidia": [
+      "abacusai/dracarys-llama-3.1-70b-instruct",
+      "google/gemma-2-2b-it",
+      "google/gemma-3n-e2b-it",
+      "meta/llama-3.1-8b-instruct",
+      "meta/llama-3.2-1b-instruct",
+      "meta/llama-3.2-3b-instruct",
+      "meta/llama-4-maverick-17b-128e-instruct",
+      "minimaxai/minimax-m2.7",
+      "mistralai/devstral-2-123b-instruct-2512",
+      "mistralai/ministral-14b-instruct-2512",
+      "mistralai/mistral-large-3-675b-instruct-2512",
+      "mistralai/mistral-medium-3.5-128b",
+      "mistralai/mistral-nemotron",
+      "mistralai/mistral-small-4-119b-2603",
+      "mistralai/mixtral-8x7b-instruct-v0.1",
+      "moonshotai/kimi-k2.6",
+      "nvidia/ising-calibration-1-35b-a3b",
+      "nvidia/llama-3.1-nemoguard-8b-topic-control",
+      "nvidia/llama-3.1-nemotron-nano-8b-v1",
+      "openai/gpt-oss-120b",
+      "qwen/qwen3.5-122b-a10b",
+      "qwen/qwen3.5-397b-a17b",
+      "stepfun-ai/step-3.5-flash",
+      "stepfun-ai/step-3.7-flash",
+      "z-ai/glm-5.2"
+    ],
+    "sambanova": [
+      "Llama-4-Maverick-17B-128E-Instruct",
+      "MiniMax-M2.7"
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "accessSchedule": null,
+    "allowUsageCommand": false,
+    "allowedCombos": [
+      "combo/*"
+    ],
+    "allowedEndpoints": [],
+    "allowedModels": [],
+    "autoResolve": false,
+    "cacheDefaultMode": "legacy",
+    "chaosModeEnabled": false,
+    "compressionEnabled": true,
+    "dailyUsageLimitUsd": null,
+    "disableNonPublicModels": false,
+    "expiresAt": null,
+    "isActive": true,
+    "maxSessions": 0,
+    "modelAccessMode": "all",
+    "name": "harness-geral",
+    "noLog": false,
+    "rateLimits": null,
+    "scopes": [
+      "self:usage"
+    ],
+    "streamDefaultMode": "legacy",
+    "usageLimitEnabled": false,
+    "weeklyUsageLimitUsd": null
+  },
+  {
+    "accessSchedule": null,
+    "allowUsageCommand": false,
+    "allowedCombos": [
+      "combo/*"
+    ],
+    "allowedEndpoints": [],
+    "allowedModels": [],
+    "autoResolve": false,
+    "cacheDefaultMode": "legacy",
+    "chaosModeEnabled": false,
+    "compressionEnabled": true,
+    "dailyUsageLimitUsd": null,
+    "disableNonPublicModels": false,
+    "expiresAt": null,
+    "isActive": true,
+    "maxSessions": 0,
+    "modelAccessMode": "all",
+    "name": "personal",
+    "noLog": false,
+    "rateLimits": null,
+    "scopes": [
+      "self:usage"
+    ],
+    "streamDefaultMode": "legacy",
+    "usageLimitEnabled": false,
+    "weeklyUsageLimitUsd": null
+  },
+  {
+    "accessSchedule": null,
+    "allowUsageCommand": false,
+    "allowedCombos": [
+      "combo/*"
+    ],
+    "allowedEndpoints": [],
+    "allowedModels": [],
+    "autoResolve": false,
+    "cacheDefaultMode": "legacy",
+    "chaosModeEnabled": false,
+    "compressionEnabled": true,
+    "dailyUsageLimitUsd": null,
+    "disableNonPublicModels": false,
+    "expiresAt": null,
+    "isActive": true,
+    "maxSessions": 0,
+    "modelAccessMode": "all",
+    "name": "pi",
+    "noLog": false,
+    "rateLimits": null,
+    "scopes": [
+      "self:usage"
+    ],
+    "streamDefaultMode": "legacy",
+    "usageLimitEnabled": false,
+    "weeklyUsageLimitUsd": null
+  }
+]

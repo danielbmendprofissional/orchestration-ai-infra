@@ -1,0 +1,50 @@
+{
+  "aggregation": {
+    "enabled": false,
+    "granularity": "daily",
+    "rawDataRetentionDays": 7
+  },
+  "backup": {
+    "autoBackupEnabled": false,
+    "autoBackupFrequency": "never",
+    "keepLastNBackups": 3
+  },
+  "cache": {
+    "alwaysPreserveClientCache": "auto",
+    "modelCatalogCacheTtlMs": 60000,
+    "promptCacheEnabled": true,
+    "promptCacheStrategy": "auto",
+    "semanticCacheEnabled": true,
+    "semanticCacheMaxSize": 100,
+    "semanticCacheTTL": 1800000
+  },
+  "logs": {
+    "callLogPipelineEnabled": false,
+    "detailedLogsEnabled": true,
+    "maxDetailSizeKb": 500,
+    "ringBufferSize": 1000
+  },
+  "optimization": {
+    "autoVacuumMode": "INCREMENTAL",
+    "cacheSize": 16384,
+    "optimizeOnStartup": true,
+    "pageSize": 4096,
+    "scheduledVacuum": "weekly",
+    "vacuumHour": 2
+  },
+  "retention": {
+    "a2aEvents": 30,
+    "autoCleanupEnabled": true,
+    "callLogs": 90,
+    "compressionAnalytics": 30,
+    "compressionCacheStats": 30,
+    "compressionRunTelemetry": 30,
+    "configAudit": 30,
+    "domainCostHistory": 30,
+    "mcpAudit": 30,
+    "memoryEntries": 180,
+    "quotaSnapshots": 90,
+    "usageHistory": 365,
+    "xpAuditLog": 30
+  }
+}

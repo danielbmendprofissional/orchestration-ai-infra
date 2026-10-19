@@ -13,3 +13,5 @@ Thumbs.db
 Claude outputs/*
 Claude outputs/
 Claude outputs
+# escrita atômica do omniroute-config.mjs (contém segredo se sobrar de execução interrompida)
+**/.env.tmp

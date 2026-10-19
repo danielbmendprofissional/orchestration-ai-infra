@@ -1,0 +1,46 @@
+{
+  "comboCooldownWait": {
+    "budgetMs": 300000,
+    "enabled": true,
+    "maxAttempts": 5,
+    "maxWaitMs": 90000
+  },
+  "connectionCooldown": {
+    "apikey": "${ENV:OMNIROUTE_RESILIENCE_CONNECTIONCOOLDOWN_APIKEY}",
+    "oauth": {
+      "baseCooldownMs": 5000,
+      "maxBackoffSteps": 8,
+      "useUpstreamRetryHints": false
+    }
+  },
+  "providerBreaker": {
+    "apikey": "${ENV:OMNIROUTE_RESILIENCE_PROVIDERBREAKER_APIKEY}",
+    "oauth": {
+      "degradationThreshold": 5,
+      "failureThreshold": 8,
+      "resetTimeoutMs": 60000
+    }
+  },
+  "providerCooldown": {
+    "enabled": true,
+    "maxRetryCooldownMs": 300000,
+    "minRetryCooldownMs": 5000
+  },
+  "providerQuotaOverrides": {},
+  "quotaShareConcurrencyLimit": {
+    "enabled": true
+  },
+  "requestQueue": {
+    "autoEnableApiKeyProviders": true,
+    "concurrentRequests": 6,
+    "maxQueueDepth": 0,
+    "maxWaitMs": 15000,
+    "minTimeBetweenRequestsMs": 350,
+    "requestsPerMinute": 40
+  },
+  "waitForCooldown": {
+    "enabled": true,
+    "maxRetries": 3,
+    "maxRetryWaitSec": 30
+  }
+}

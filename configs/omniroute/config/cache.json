@@ -1,0 +1,10 @@
+{
+  "alwaysPreserveClientCache": "auto",
+  "idempotencyWindowMs": 5000,
+  "modelCatalogCacheTtlMs": 60000,
+  "promptCacheEnabled": true,
+  "promptCacheStrategy": "auto",
+  "semanticCacheEnabled": true,
+  "semanticCacheMaxSize": 100,
+  "semanticCacheTTL": 1800000
+}

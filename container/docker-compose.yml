@@ -73,6 +73,36 @@ services:
     networks:
       - infra-network
 
+  # Gateway de LLM (OpenAI-compatible) na frente dos executores do pi.dev — combos e
+  # decisões em ../configs/omniroute/combos.md. Guarda chave de provider: porta só em
+  # 127.0.0.1 e REQUIRE_API_KEY=true, nunca expor na rede.
+  omniroute:
+    image: diegosouzapw/omniroute:3.8.51   # versão fixa: config/ é aplicada pela API de gerenciamento, upgrade = testar export/apply antes
+    container_name: omniroute
+    restart: unless-stopped
+    stop_grace_period: 40s
+    environment:
+      DATA_DIR: /app/data
+      REDIS_URL: redis://redis:6379/15   # db 15 reservado pro omniroute, projetos usam ACL por prefixo no db 0
+      REQUIRE_API_KEY: "true"
+      INITIAL_PASSWORD: ${OMNIROUTE_INITIAL_PASSWORD}
+      OMNIROUTE_MEMORY_MB: "2048"        # recomendado pra 1 usuário rodando coding agents
+    ports:
+      - "127.0.0.1:20128:20128"   # dashboard + /v1
+      - "127.0.0.1:20129:20129"   # API
+    volumes:
+      - infra_omniroute_data:/app/data
+    depends_on:
+      - redis
+    networks:
+      - infra-network
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.mjs"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbitmq
@@ -258,6 +288,7 @@ volumes:
   infra_prometheus_data:
   infra_loki_data:
   infra_grafana_data:
+  infra_omniroute_data:
 
 networks:
   infra-network:

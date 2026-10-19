@@ -1,0 +1,23 @@
+{
+  "applyToAssistantMessages": false,
+  "applyToCodeBlocks": false,
+  "applyToToolResults": true,
+  "customFiltersEnabled": true,
+  "deduplicateThreshold": 3,
+  "disabledFilters": [],
+  "enableGrouping": false,
+  "enableRenderers": false,
+  "enabled": false,
+  "enabledFilters": [],
+  "groupingThreshold": 3,
+  "intensity": "minimal",
+  "maxCharsPerResult": 12000,
+  "maxLinesPerResult": 120,
+  "preserveDocstrings": true,
+  "rawOutputMaxAgeDays": 30,
+  "rawOutputMaxBytes": 1048576,
+  "rawOutputMaxFiles": 100000,
+  "rawOutputRetention": "never",
+  "stripCodeComments": false,
+  "trustProjectFilters": false
+}

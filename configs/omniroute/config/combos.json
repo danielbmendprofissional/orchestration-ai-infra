@@ -1,0 +1,457 @@
+[
+  {
+    "config": {
+      "failoverBeforeRetry": true,
+      "handoffModel": "",
+      "handoffThreshold": 0.85,
+      "maxMessagesForSummary": 30,
+      "maxRetries": 1,
+      "reasoningTokenBufferEnabled": true,
+      "retryDelayMs": 2000,
+      "trackMetrics": true,
+      "zeroLatencyOptimizationsEnabled": false
+    },
+    "context_cache_protection": true,
+    "models": [
+      {
+        "connection": "nvidia/main",
+        "kind": "model",
+        "label": "main",
+        "model": "nvidia/moonshotai/kimi-k3",
+        "providerId": "nvidia"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-3.8-flash",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "mistral/main",
+        "kind": "model",
+        "label": "main",
+        "model": "mistral/ministral-14b-latest",
+        "providerId": "mistral"
+      },
+      {
+        "connection": "ollama-cloud/main",
+        "kind": "model",
+        "label": "main",
+        "model": "ollama-cloud/deepseek-v4.1-flash",
+        "providerId": "ollama-cloud"
+      },
+      {
+        "connection": "nvidia/main",
+        "kind": "model",
+        "label": "main",
+        "model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+        "providerId": "nvidia"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemma-4-31b-it",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "cloudflare-ai/main",
+        "kind": "model",
+        "label": "main",
+        "model": "cloudflare-ai/@cf/google/gemma-4-26b-a4b-it",
+        "providerId": "cloudflare-ai"
+      },
+      {
+        "connection": "ollama-cloud/main",
+        "kind": "model",
+        "label": "main",
+        "model": "ollama-cloud/glm-5.3-flash",
+        "providerId": "ollama-cloud"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-3.5-flash-lite",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "mistral/main",
+        "kind": "model",
+        "label": "main",
+        "model": "mistral/mistral-small-2603",
+        "providerId": "mistral"
+      },
+      {
+        "connection": "cloudflare-ai/main",
+        "kind": "model",
+        "label": "main",
+        "model": "cloudflare-ai/@cf/zai-org/glm-4.7-flash",
+        "providerId": "cloudflare-ai"
+      },
+      {
+        "connection": "openrouter/main",
+        "kind": "model",
+        "label": "main",
+        "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "providerId": "openrouter"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/DeepSeek-V3.1",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/deepseek-v4-flash-0731free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/deepseek/deepseek-v4-flash-0731free:free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/qwen/qwen3.7-flash:free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/auto:free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemma-4-26b-a4b-it",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-3.6-flash",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-2.5-pro-preview-tts",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "groq/main",
+        "kind": "model",
+        "label": "main",
+        "model": "groq/qwen/qwen3.8-27b",
+        "providerId": "groq"
+      },
+      {
+        "connection": "groq/main",
+        "kind": "model",
+        "label": "main",
+        "model": "groq/openai/gpt-oss-120b",
+        "providerId": "groq"
+      },
+      {
+        "connection": "groq/main",
+        "kind": "model",
+        "label": "main",
+        "model": "groq/openai/gpt-oss-20b",
+        "providerId": "groq"
+      },
+      {
+        "connection": "glm/main",
+        "kind": "model",
+        "label": "main",
+        "model": "glm/glm-4.7",
+        "providerId": "glm"
+      },
+      {
+        "connection": "nvidia/main",
+        "kind": "model",
+        "label": "main",
+        "model": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+        "providerId": "nvidia"
+      },
+      {
+        "connection": "opencode-zen/main",
+        "kind": "model",
+        "label": "main",
+        "model": "opencode-zen/mimo-v2.5-free",
+        "providerId": "opencode-zen"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/gpt-oss-120b",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/gemma-4-31B-it",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/Meta-Llama-3.3-70B-Instruct",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/DeepSeek-V3.2",
+        "providerId": "sambanova"
+      }
+    ],
+    "name": "harness",
+    "strategy": "priority"
+  },
+  {
+    "config": {
+      "failoverBeforeRetry": true,
+      "handoffModel": "",
+      "handoffThreshold": 0.85,
+      "maxMessagesForSummary": 30,
+      "maxRetries": 1,
+      "reasoningTokenBufferEnabled": true,
+      "retryDelayMs": 2000,
+      "trackMetrics": true,
+      "zeroLatencyOptimizationsEnabled": false
+    },
+    "models": [
+      {
+        "connection": "nvidia/main",
+        "kind": "model",
+        "label": "main",
+        "model": "nvidia/moonshotai/kimi-k3",
+        "providerId": "nvidia"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-3.8-flash",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "mistral/main",
+        "kind": "model",
+        "label": "main",
+        "model": "mistral/ministral-14b-latest",
+        "providerId": "mistral"
+      },
+      {
+        "connection": "ollama-cloud/main",
+        "kind": "model",
+        "label": "main",
+        "model": "ollama-cloud/deepseek-v4.1-flash",
+        "providerId": "ollama-cloud"
+      },
+      {
+        "connection": "nvidia/main",
+        "kind": "model",
+        "label": "main",
+        "model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+        "providerId": "nvidia"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemma-4-31b-it",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "cloudflare-ai/main",
+        "kind": "model",
+        "label": "main",
+        "model": "cloudflare-ai/@cf/google/gemma-4-26b-a4b-it",
+        "providerId": "cloudflare-ai"
+      },
+      {
+        "connection": "ollama-cloud/main",
+        "kind": "model",
+        "label": "main",
+        "model": "ollama-cloud/glm-5.3-flash",
+        "providerId": "ollama-cloud"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-3.5-flash-lite",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "mistral/main",
+        "kind": "model",
+        "label": "main",
+        "model": "mistral/mistral-small-2603",
+        "providerId": "mistral"
+      },
+      {
+        "connection": "cloudflare-ai/main",
+        "kind": "model",
+        "label": "main",
+        "model": "cloudflare-ai/@cf/zai-org/glm-4.7-flash",
+        "providerId": "cloudflare-ai"
+      },
+      {
+        "connection": "openrouter/main",
+        "kind": "model",
+        "label": "main",
+        "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "providerId": "openrouter"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/DeepSeek-V3.1",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/deepseek-v4-flash-0731free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/deepseek/deepseek-v4-flash-0731free:free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/qwen/qwen3.7-flash:free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "bazaarlink/main",
+        "kind": "model",
+        "label": "main",
+        "model": "bazaarlink/auto:free",
+        "providerId": "bazaarlink"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemma-4-26b-a4b-it",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-3.6-flash",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "gemini/main",
+        "kind": "model",
+        "label": "main",
+        "model": "gemini/gemini-2.5-pro-preview-tts",
+        "providerId": "gemini"
+      },
+      {
+        "connection": "groq/main",
+        "kind": "model",
+        "label": "main",
+        "model": "groq/qwen/qwen3.8-27b",
+        "providerId": "groq"
+      },
+      {
+        "connection": "groq/main",
+        "kind": "model",
+        "label": "main",
+        "model": "groq/openai/gpt-oss-120b",
+        "providerId": "groq"
+      },
+      {
+        "connection": "groq/main",
+        "kind": "model",
+        "label": "main",
+        "model": "groq/openai/gpt-oss-20b",
+        "providerId": "groq"
+      },
+      {
+        "connection": "glm/main",
+        "kind": "model",
+        "label": "main",
+        "model": "glm/glm-4.7",
+        "providerId": "glm"
+      },
+      {
+        "connection": "nvidia/main",
+        "kind": "model",
+        "label": "main",
+        "model": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+        "providerId": "nvidia"
+      },
+      {
+        "connection": "opencode-zen/main",
+        "kind": "model",
+        "label": "main",
+        "model": "opencode-zen/mimo-v2.5-free",
+        "providerId": "opencode-zen"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/gpt-oss-120b",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/gemma-4-31B-it",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/Meta-Llama-3.3-70B-Instruct",
+        "providerId": "sambanova"
+      },
+      {
+        "connection": "sambanova/main",
+        "kind": "model",
+        "label": "main",
+        "model": "sambanova/DeepSeek-V3.2",
+        "providerId": "sambanova"
+      }
+    ],
+    "name": "pi.dev",
+    "strategy": "priority"
+  }
+]

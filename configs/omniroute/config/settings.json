@@ -1,0 +1,105 @@
+{
+  "a2aEnabled": false,
+  "alwaysPreserveClientCache": "auto",
+  "antigravitySignatureCacheMode": "enabled",
+  "autoDisableBannedAccounts": true,
+  "autoDisableBannedScope": "all",
+  "autoDisableBannedThreshold": 3,
+  "autoRefreshProviderQuota": false,
+  "autoRefreshProviderQuotaInterval": 180,
+  "autoRoutingEnabled": false,
+  "claudeClassifierCompat": "off",
+  "claudeFastMode": {
+    "enabled": false,
+    "supportedModels": [
+      "claude-fable-5",
+      "claude-opus-5",
+      "claude-opus-4-8",
+      "claude-opus-4-7",
+      "claude-opus-4-6"
+    ]
+  },
+  "claudeWarmup": {
+    "connections": {}
+  },
+  "cloudEnabled": false,
+  "codexAutoPing": {
+    "connections": {}
+  },
+  "codexServiceTier": {
+    "enabled": false
+  },
+  "comboAutoPromoteEnabled": false,
+  "comboConfigMode": "guided",
+  "comboStickyRoundRobinLimit": null,
+  "comboStrategy": "fallback",
+  "credentialRedactionEnabled": true,
+  "customBannedSignals": [],
+  "customSystemPrompt": "",
+  "customSystemPromptEnabled": false,
+  "debugMode": false,
+  "disableSessionStickiness": false,
+  "excludeTosAvoid": false,
+  "freeAccessPolicy": "off",
+  "hiddenSidebarGroupLabels": [],
+  "hiddenSidebarItems": [],
+  "hideAutoCombos": false,
+  "hideEndpointCloudflaredTunnel": false,
+  "hideEndpointNgrokTunnel": false,
+  "hideEndpointTailscaleFunnel": false,
+  "hideNoThinkVariants": false,
+  "hidePaidModels": false,
+  "idempotencyWindowMs": 5000,
+  "localOnlyManageScopeBypassEnabled": true,
+  "localOnlyManageScopeBypassPrefixes": [
+    "/api/mcp/"
+  ],
+  "logToolSources": false,
+  "maxBodySizeMb": 10,
+  "maxRetryIntervalSec": 30,
+  "mcpEnabled": false,
+  "modelLockout": {
+    "baseCooldownMs": 120000,
+    "enabled": true,
+    "errorCodes": [
+      403,
+      404,
+      429,
+      502,
+      503,
+      504
+    ],
+    "maxBackoffSteps": 10,
+    "maxCooldownMs": 1800000,
+    "useExponentialBackoff": true
+  },
+  "oidcAllowedSubjects": [],
+  "oidcClientId": "",
+  "oidcClientSecret": "",
+  "oidcDisablePasswordLogin": false,
+  "oidcEnabled": false,
+  "oidcIssuer": "",
+  "oidcRedirectPath": "/api/auth/oidc/callback",
+  "oidcScopes": [
+    "openid",
+    "profile",
+    "email"
+  ],
+  "perKeyProxyEnabled": false,
+  "preferClaudeCodeForUnprefixedClaudeModels": false,
+  "promptCacheAffinityEnabled": true,
+  "providerStrategies": {},
+  "proxyEnabled": true,
+  "quotaVisibility": {},
+  "radarEnabled": false,
+  "requestRetry": 3,
+  "responsesPreviousResponseIdMode": "auto",
+  "sessionAffinityTtlMs": 0,
+  "sidebarActivePreset": null,
+  "sidebarItemOrder": {},
+  "sidebarSectionOrder": [],
+  "stickyRoundRobinLimit": 3,
+  "tailscaleEnabled": false,
+  "tailscaleUrl": "",
+  "wsAuth": false
+}
