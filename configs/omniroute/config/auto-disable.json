@@ -1,0 +1,5 @@
+{
+  "enabled": true,
+  "threshold": 3,
+  "scope": "all"
+}

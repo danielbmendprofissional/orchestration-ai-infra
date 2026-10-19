@@ -14,7 +14,7 @@
     "modelCatalogCacheTtlMs": 60000,
     "promptCacheEnabled": true,
     "promptCacheStrategy": "auto",
-    "semanticCacheEnabled": true,
+    "semanticCacheEnabled": false,
     "semanticCacheMaxSize": 100,
     "semanticCacheTTL": 1800000
   },

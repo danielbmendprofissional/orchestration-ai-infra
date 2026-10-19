@@ -25,7 +25,7 @@
     "compressRoles": [
       "user"
     ],
-    "enabled": true,
+    "enabled": false,
     "intensity": "lite",
     "minMessageLength": 50,
     "preservePatterns": [],
@@ -176,10 +176,6 @@
     {
       "engine": "rtk",
       "intensity": "standard"
-    },
-    {
-      "engine": "caveman",
-      "intensity": "full"
     }
   ],
   "ultra": {

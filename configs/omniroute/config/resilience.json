@@ -6,7 +6,11 @@
     "maxWaitMs": 90000
   },
   "connectionCooldown": {
-    "apikey": "${ENV:OMNIROUTE_RESILIENCE_CONNECTIONCOOLDOWN_APIKEY}",
+    "apikey": {
+      "baseCooldownMs": 3000,
+      "maxBackoffSteps": 5,
+      "useUpstreamRetryHints": true
+    },
     "oauth": {
       "baseCooldownMs": 5000,
       "maxBackoffSteps": 8,
@@ -14,7 +18,11 @@
     }
   },
   "providerBreaker": {
-    "apikey": "${ENV:OMNIROUTE_RESILIENCE_PROVIDERBREAKER_APIKEY}",
+    "apikey": {
+      "degradationThreshold": 7,
+      "failureThreshold": 12,
+      "resetTimeoutMs": 30000
+    },
     "oauth": {
       "degradationThreshold": 5,
       "failureThreshold": 8,

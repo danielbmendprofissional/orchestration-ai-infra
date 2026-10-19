@@ -2,9 +2,6 @@
   "a2aEnabled": false,
   "alwaysPreserveClientCache": "auto",
   "antigravitySignatureCacheMode": "enabled",
-  "autoDisableBannedAccounts": true,
-  "autoDisableBannedScope": "all",
-  "autoDisableBannedThreshold": 3,
   "autoRefreshProviderQuota": false,
   "autoRefreshProviderQuotaInterval": 180,
   "autoRoutingEnabled": false,
@@ -22,7 +19,6 @@
   "claudeWarmup": {
     "connections": {}
   },
-  "cloudEnabled": false,
   "codexAutoPing": {
     "connections": {}
   },

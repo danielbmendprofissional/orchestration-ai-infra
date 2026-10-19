@@ -154,12 +154,16 @@ const SECRET_KEY = /(secret|password|token|apikey|api_key|cookie|extraapikeys)$/
 const NOT_SECRET = new Set(["apiKeyHealth", "hasPassword", "oidcDisablePasswordLogin"]);
 const isPlaceholder = (v) => typeof v === "string" && /^\$\{ENV:[A-Z0-9_]+\}$/.test(v);
 const placeholderName = (v) => v.slice(6, -1);
+// Segredo = nome de campo suspeito E valor texto (ou lista de texto). Objeto com nome suspeito é config
+// (ex.: resilience.connectionCooldown.apikey = perfil do tipo de auth "apikey"), não segredo.
+const isSecretField = (k, v) =>
+  SECRET_KEY.test(k) && !NOT_SECRET.has(k) && (typeof v === "string" || (Array.isArray(v) && v.every((x) => typeof x === "string")));
 function sanitizeSecrets(obj, prefix, harvested) {
   if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
   const out = {};
   for (const [k, v] of Object.entries(obj)) {
     const empty = v === null || v === "" || (Array.isArray(v) && v.length === 0);
-    if (SECRET_KEY.test(k) && !NOT_SECRET.has(k) && !empty) {
+    if (isSecretField(k, v) && !empty) {
       const name = envName(prefix, k);
       out[k] = `\${ENV:${name}}`;
       if (harvested && harvested[k] !== undefined) harvestSecret(name, harvested[k]);
@@ -189,7 +193,7 @@ function stripSecrets(v) {
   if (isPlaceholder(v)) return undefined;
   if (Array.isArray(v)) return v.map(stripSecrets);
   if (v && typeof v === "object")
-    return Object.fromEntries(Object.entries(v).filter(([k, x]) => !isPlaceholder(x) && !(SECRET_KEY.test(k) && !NOT_SECRET.has(k))).map(([k, x]) => [k, stripSecrets(x)]));
+    return Object.fromEntries(Object.entries(v).filter(([k, x]) => !isPlaceholder(x) && !isSecretField(k, x)).map(([k, x]) => [k, stripSecrets(x)]));
   return v;
 }
 let harvestCount = 0;
@@ -212,12 +216,15 @@ const OBJECT_RESOURCES = [
       "machineId", "setupComplete", "provider_limits_auto_sync_last_run", "codex_catalog_revalidated_version",
       "codexConnectionDefaultsMigrationV1", "requireLogin", "resilienceSettings", "radarAdminUrl", "password",
       "call_log_pipeline_enabled", // legado, duplicado de database.logs.callLogPipelineEnabled
+      "autoDisableBannedAccounts", "autoDisableBannedThreshold", "autoDisableBannedScope", // → auto-disable.json
+      "cloudEnabled", // só muda via ação de cloud sync; sem NEXT_PUBLIC_CLOUD_URL a sync nem funciona
     ],
   },
   { file: "compression.json", get: "/api/settings/compression", write: ["PUT", "/api/settings/compression"], mode: "diff-keys", readOnly: ["enginesExplicit"] },
   { file: "rtk.json", get: "/api/context/rtk/config", write: ["PUT", "/api/context/rtk/config"], mode: "diff-keys" },
   { file: "cache.json", get: "/api/settings/cache-config", write: ["PUT", "/api/settings/cache-config"], mode: "diff-keys", readOnly: ["embeddingOptions"] }, // catálogo derivado
   { file: "database.json", get: "/api/settings/database", write: ["PUT", "/api/settings/database"], mode: "full", readOnly: ["location", "stats"] },
+  { file: "auto-disable.json", get: "/api/settings/auto-disable-accounts", write: ["PUT", "/api/settings/auto-disable-accounts"], mode: "diff-keys" },
   { file: "resilience.json", get: "/api/resilience", write: ["PATCH", "/api/resilience"], mode: "diff-keys", readOnly: ["legacy"] },
 ];
 
@@ -361,7 +368,9 @@ async function doApply() {
       return !covers(stripSecrets(want[k]), stripSecrets(have[k]));
     });
     if (!changed.length) continue;
-    const body = r.mode === "full" ? deepMerge(have, want) : Object.fromEntries(changed.map((k) => [k, deepMerge(have[k], want[k])]));
+    // "full": a rota exige o objeto inteiro → merge profundo com a instância. Parcial: só o declarado
+    // (o servidor mescla; reenviar campo lido do GET pode ser rejeitado, ex.: requestQueue.globalConcurrentRequests).
+    const body = r.mode === "full" ? deepMerge(have, want) : pick(want, changed);
     const { value, missing } = resolveSecrets(body);
     if (missing.length) problems.push(`${r.file}: segredos ausentes no .env: ${missing.join(", ")}`);
     await step(`${r.file}: ${changed.join(", ")}`, () => api(r.write[0], r.write[1], value));
