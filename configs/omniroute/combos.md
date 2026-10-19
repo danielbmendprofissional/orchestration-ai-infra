@@ -16,45 +16,37 @@ Sem segredo neste arquivo nem em `config/`: chave de provider e valor de API key
 
 ### `pool-exec-free` (interno, não usado direto por cliente)
 
-Estratégia: `lkgp` (ver princípio 4).
+Estratégia: `lkgp` (ver princípio 4). Ordem pelo eval de 2026-10-19 (ver "Ranking").
 
-| # | Modelo | Obs |
+| # | Modelo | Eval |
 |---|---|---|
-| 1 | `nvidia/moonshotai/kimi-k3` | |
-| 2 | `nvidia/nvidia/nemotron-3-ultra-550b-a55b` | |
-| 3 | `openrouter/nvidia/nemotron-3-ultra-550b-a55b:free` | mesmo modelo, outro provider |
-| 4 | `ollama-cloud/deepseek-v4.1-flash` | |
-| 5 | `nvidia/deepseek-ai/deepseek-v4.1-flash` | mesmo modelo, outro provider |
-| 6 | `bazaarlink/deepseek/deepseek-v4-flash-0731free:free` | mesmo modelo, outro provider |
-| 7 | `ollama-cloud/glm-5.3-flash` | |
-| 8 | `groq/openai/gpt-oss-120b` | |
-| 9 | `gemini/gemini-3.8-flash` | em teste — 403/429 no projeto Google em 2026-10-12 |
-| 10 | `sambanova/DeepSeek-V3.2` | em teste — 429 em 2026-10-12 |
+| 1 | `bazaarlink/deepseek/deepseek-v4-flash-0731free:free` | 3/3, ~11s |
+| 2 | `nvidia/nvidia/nemotron-3-ultra-550b-a55b` | 3/3, ~24s |
+| 3 | `openrouter/nvidia/nemotron-3-ultra-550b-a55b:free` | 3/3, mesmo modelo, outro provider (write-test lento: 200s) |
+| 4 | `groq/openai/gpt-oss-120b` | 2/3, o mais rápido (~3s) — falhou só em escrever teste |
 
 ### `pi-exec` — executor geral
 
-Estratégia: `priority`. Usado por `data`, `backend`, `front`, `ui`, `tests`.
+Estratégia: `priority`, `nestedComboMode: execute` (o pool roda com a própria estratégia). Usado por `data`, `backend`, `front`, `ui`, `tests`.
 
 | # | Alvo |
 |---|---|
 | 1 | combo `pool-exec-free` |
 | 2 | `deepseek/deepseek-v4-flash` (pago, último recurso) |
 
-Combo dentro de combo é suportado na 3.8.51 (passo `"kind": "combo-ref"`), testado.
+Combo dentro de combo é suportado na 3.8.51 (passo `"kind": "combo-ref"`), testado. Sem `nestedComboMode: execute` o OmniRoute achata o pool e ignora o `lkgp` dele.
 
 ### `pi-light` — tarefa mecânica
 
-Estratégia: `lkgp`. Usado por `qa`. Sem modelo pago — se tudo estiver esgotado, falha e o agente-pai decide.
+Estratégia: `lkgp`, `nestedComboMode: execute`. Usado por `qa`. Sem modelo pago. Todos acertam ler/editar (2/3); nenhum passou em "escrever teste que pega bug" — por isso só `qa` usa este combo.
 
 | # | Modelo |
 |---|---|
-| 1 | `groq/openai/gpt-oss-20b` |
+| 1 | `groq/openai/gpt-oss-20b` (escreveu tool call com JSON inválido 1x) |
 | 2 | `mistral/ministral-14b-latest` |
 | 3 | `cloudflare-ai/@cf/zai-org/glm-4.7-flash` |
 | 4 | `cloudflare-ai/@cf/google/gemma-4-26b-a4b-it` |
-| 5 | `gemini/gemini-3.5-flash-lite` (em teste) |
-| 6 | `mistral/mistral-small-2603` (em teste) |
-| 7 | combo `pool-exec-free` (se o nível leve inteiro estiver esgotado) |
+| 5 | combo `pool-exec-free` (se o nível leve inteiro estiver esgotado) |
 
 ### `pi-quality` — review e segurança
 
@@ -64,18 +56,25 @@ Estratégia: `priority`. Usado por `review`, `security`.
 |---|---|
 | 1 | `openai/gpt-5.6-luna` (pago) |
 | 2 | `deepseek/deepseek-v4-flash` (pago) |
-| 3 | `nvidia/moonshotai/kimi-k3` (free, só se os dois pagos falharem) |
+| 3 | `nvidia/nvidia/nemotron-3-ultra-550b-a55b` (free, só se os dois pagos falharem) |
 
 ### `harness` — código do trabalho (DeepSeek Harness)
 
 **Pendente** — revisar depois: código profissional não deveria passar por provider free que treina com prompt. Até lá, não usar o `harness` com código do trabalho.
 
-### Removidos dos combos antigos (`harness`/`pi.dev` de 2026-10-13)
+### Fora dos combos (eval de 2026-10-19)
 
-- `gemini/gemini-2.5-pro-preview-tts` — modelo de voz, não serve pra código.
-- `bazaarlink/auto:free` — modelo aleatório, imprevisível.
-- `glm/glm-4.7` — sem saldo (429 "Insufficient balance") até recarregar o plano GLM.
-- Modelos pequenos (`ministral-14b`, `gemma-4`, `flash-lite`, `mistral-small`) — saíram do executor e foram pro `pi-light`.
+| Modelo | Motivo | Volta quando |
+|---|---|---|
+| `nvidia/moonshotai/kimi-k3` | 410 `model_shutdown` (NVIDIA desligou) — e o OmniRoute marcou a conexão nvidia inteira como sem credencial em seguida, derrubando os outros nvidia do mesmo combo | nunca, nessa conexão |
+| `ollama-cloud/*` | 402: modelos fora do plano free ($20/mês) | se assinar o Pro |
+| `sambanova/*` | 402: exige forma de pagamento; provider desativado (`isActive: false`) | se cadastrar pagamento |
+| `gemini/*` | 403 "project denied access" | resolver o projeto no Google AI Studio |
+| `nvidia/deepseek-ai/deepseek-v4.1-flash` | timeout de 120s nas 3 tarefas | reavaliar no próximo eval |
+| `mistral/mistral-small-2603` | 429 nas 3 tarefas | reavaliar no próximo eval |
+| `gemini/gemini-2.5-pro-preview-tts`, `bazaarlink/auto:free`, `glm/glm-4.7` | voz / aleatório / sem saldo (decisão de 2026-10-18) | — |
+
+Pool free ficou fino (4 modelos, 3 providers): com 4 sessões `pi` em paralelo, o DeepSeek pago vai ser acionado mais vezes que o planejado — acompanhar o saldo.
 
 ## Configurações globais
 
@@ -97,4 +96,16 @@ Estratégia: `priority`. Usado por `review`, `security`.
 
 ## Ranking
 
-Atualizado a partir de `ai-ops/tools/omniroute-eval`. Ainda não rodou.
+Fonte: `ai-ops/tools/omniroute-eval`. Última rodada: 2026-10-19, 1 run por tarefa (amostra pequena — rodar `node eval.mjs` com 2 runs pra confirmar a ordem).
+
+| Modelo | Qualidade | Disponib. | Mediana |
+|---|---|---|---|
+| `bazaarlink/deepseek/deepseek-v4-flash-0731free:free` | 100% | 100% | 11s |
+| `openrouter/nvidia/nemotron-3-ultra-550b-a55b:free` | 100% | 100% | 23s |
+| `nvidia/nvidia/nemotron-3-ultra-550b-a55b` | 100% | 100% | 24s |
+| `groq/openai/gpt-oss-20b` | 100% | 67% | 14s |
+| `groq/openai/gpt-oss-120b` | 67% | 100% | 3s |
+| `cloudflare-ai/@cf/zai-org/glm-4.7-flash` | 67% | 100% | 14s |
+| `mistral/ministral-14b-latest` | 67% | 100% | 15s |
+| `cloudflare-ai/@cf/google/gemma-4-26b-a4b-it` | 67% | 100% | 25s |
+| demais 8 | 0% | 0% | — (ver "Fora dos combos") |

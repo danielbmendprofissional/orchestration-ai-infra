@@ -172,7 +172,7 @@
   },
   {
     "apiKey": "${ENV:OMNIROUTE_KEY_SAMBANOVA}",
-    "isActive": true,
+    "isActive": false,
     "maxConcurrent": null,
     "name": "main",
     "perKeyProxyEnabled": false,
