@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Config-as-code do OmniRoute: config/*.json (git, sem segredo) + infra/container/.env (segredo) <-> instância.
+// Config-as-code do OmniRoute: config/*.json (git, sem segredo) + ai-infra/container/.env (segredo) <-> instância.
 // Uso e regras: README.md desta pasta. Node 22+, sem dependência.
 //
 //   node omniroute-config.mjs export [--harvest-secrets] [--overwrite-secrets]

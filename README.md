@@ -4,10 +4,9 @@ Serviços de contexto compartilhados, rodando permanentemente na máquina do Dan
 
 ## Decisão registrada em 2026-09-05 (ver `ai-base/docs/agents/infra-local.md` pro registro completo do lado do `ai-base`)
 
-- **DefectDojo vai unificar aqui.** Hoje ele roda separado (clone à parte do `django-DefectDojo`, documentado em `Security-Scanner/README.md`). A decisão foi trazê-lo pra dentro deste `docker-compose.yml`, como mais um serviço permanente — **ainda não implementado**. Falta decidir se ele reaproveita o Postgres/Redis já existentes aqui ou mantém instâncias próprias.
 - **Kubernetes segue como meta**, mesmo não existindo nenhum manifesto ainda — hoje isto aqui é só Docker Compose de dev local (ver comentário `shm_size: 128mb # valor de dev local` no compose).
-- **`banco/valuto/` é específico do projeto Valuto**, não genérico — mesmo padrão de separação genérico/específico usado no `template-ci` (lá é `personal/` vs. `tce/`). Projetos novos ganham seu próprio `banco/<projeto>/init-db.sql` ao lado, não em cima do que já existe.
-- **Canônico de `banco/valuto/init-db.sql`: o repo do `valuto`.** O arquivo real que os devs editam é `valuto/backend/infra/banco/01-init-valuto-db.sql` (mais documentado, com comentários de ADR e o bloco de teste manual de isolamento entre schemas) — a cópia aqui em `infra/` é só o que o Docker de fato monta via `docker-entrypoint-initdb.d`. Os dois já divergiram uma vez (comentários), então a convenção agora é: sempre que o script do `valuto` mudar, sincronizar aqui manualmente (repos vivem como pastas irmãs na mesma máquina):
+- **`banco/valuto/` é específico do projeto Valuto**, não genérico — separação genérico/específico. Projetos novos ganham seu próprio `banco/<projeto>/init-db.sql` ao lado, não em cima do que já existe.
+- **Canônico de `banco/valuto/init-db.sql`: o repo do `valuto`.** O arquivo real que os devs editam é `valuto/backend/infra/banco/01-init-valuto-db.sql` (mais documentado, com comentários de ADR e o bloco de teste manual de isolamento entre schemas) — a cópia aqui em `ai-infra/` é só o que o Docker de fato monta via `docker-entrypoint-initdb.d`. Os dois já divergiram uma vez (comentários), então a convenção agora é: sempre que o script do `valuto` mudar, sincronizar aqui manualmente (repos vivem como pastas irmãs na mesma máquina):
 
   ```powershell
   Copy-Item "..\valuto\backend\infra\banco\01-init-valuto-db.sql" "banco\valuto\init-db.sql" -Force
@@ -36,14 +35,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.com/personal.daniel.bmend/infra.git
+git remote add origin https://gitlab.com/orchestration-ai/ai-infra.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-* [Set up project integrations](https://gitlab.com/personal.daniel.bmend/infra/-/settings/integrations)
+* [Set up project integrations](https://gitlab.com/orchestration-ai/ai-infra/-/settings/integrations)
 
 ## Collaborate with your team
 

@@ -2,7 +2,7 @@
 
 Decisões e justificativas da configuração do OmniRoute (serviço `omniroute` em `container/docker-compose.yml`). A configuração aplicável mora em `config/*.json` e é aplicada por `omniroute-config.mjs` — ver `README.md` desta pasta. Este arquivo explica o **porquê**; quando uma decisão mudar, atualizar aqui e em `config/` no mesmo commit.
 
-Sem segredo neste arquivo nem em `config/`: chave de provider e valor de API key de cliente só em `infra/container/.env`.
+Sem segredo neste arquivo nem em `config/`: chave de provider e valor de API key de cliente só em `ai-infra/container/.env`.
 
 ## Princípios
 

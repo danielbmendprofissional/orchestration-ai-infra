@@ -28,7 +28,7 @@ CSharpier como formatter (`.cs`), format-on-save ligado, tab size 4 (padrão C#,
 
 Desliga a start page do Docker (não serve pra nada depois da primeira vez). Garante que `.yaml`/`.yml` sejam reconhecidos como YAML e `Dockerfile*` como Dockerfile (evita o VS Code tratar como plain text). Sem format-on-save em Dockerfile (não tem um formatter confiável universal pra ele, forçar um formata errado). YAML com tab size 2 e espaços (não tabs — a maioria dos parsers de YAML em CI quebra com tab literal).
 
-**Quando usar:** editando `docker-compose.yml`, `.gitlab-ci.yml`, manifests de Kubernetes, Dockerfiles — geralmente dentro do repo `infra` ou na pasta de deploy de um projeto, não no código-fonte da aplicação.
+**Quando usar:** editando `docker-compose.yml`, `.gitlab-ci.yml`, manifests de Kubernetes, Dockerfiles — geralmente dentro do repo `ai-infra` ou na pasta de deploy de um projeto, não no código-fonte da aplicação.
 
 ## Como aplicar de verdade dentro do VS Code
 

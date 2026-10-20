@@ -5,7 +5,7 @@ O OmniRoute guarda tudo no próprio SQLite e não lê arquivo de configuração.
 | Onde | O quê | Git |
 |---|---|---|
 | `config/*.json` | Tudo que é configuração: providers, combos, settings, compressão, RTK, cache, banco, resiliência, modelos ocultos/custom, API keys de cliente (permissões) | sim, **sem nenhum segredo** |
-| `infra/container/.env` | Segredos: chave de cada provider (`OMNIROUTE_KEY_<PROVIDER>`), chaves extras, valor das API keys de cliente (`OMNIROUTE_CLIENT_KEY_<NOME>`), senha do dashboard (`OMNIROUTE_INITIAL_PASSWORD`) | **nunca** |
+| `ai-infra/container/.env` | Segredos: chave de cada provider (`OMNIROUTE_KEY_<PROVIDER>`), chaves extras, valor das API keys de cliente (`OMNIROUTE_CLIENT_KEY_<NOME>`), senha do dashboard (`OMNIROUTE_INITIAL_PASSWORD`) | **nunca** |
 | volume `infra_omniroute_data` | Estado de runtime: logs, uso, catálogo de modelos sincronizado, segredos internos que o container gera sozinho (`JWT_SECRET`, `STORAGE_ENCRYPTION_KEY`, `API_KEY_SECRET`) | não — descartável, `apply` reconstrói |
 | `combos.md` | Por que cada combo/setting é como é (decisões) | sim |
 
@@ -16,14 +16,14 @@ Segredo dentro de `config/*.json` aparece só como placeholder `"${ENV:NOME}"`, 
 ## Comandos
 
 ```powershell
-cd infra\configs\omniroute
+cd ai-infra\configs\omniroute
 node omniroute-config.mjs diff                  # o que o apply mudaria (não muda nada)
 node omniroute-config.mjs apply                 # git + .env → instância
 node omniroute-config.mjs apply --setx          # idem, e grava no Windows a key de cliente recém-criada (OMNIROUTE_API_KEY etc.)
 node omniroute-config.mjs export                # instância → config/*.json (pra versionar o que mudou no dashboard)
 ```
 
-Opções: `--url=` (padrão `http://127.0.0.1:20128`), `--env=` (padrão `infra/container/.env`), `--config=` (padrão `./config`).
+Opções: `--url=` (padrão `http://127.0.0.1:20128`), `--env=` (padrão `ai-infra/container/.env`), `--config=` (padrão `./config`).
 
 | Opção | Efeito |
 |---|---|
