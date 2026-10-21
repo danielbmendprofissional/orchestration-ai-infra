@@ -8,11 +8,13 @@
 //   node infra-config.mjs diff                  = apply --dry-run (não muda nada, nem o .env)
 //   node infra-config.mjs verify                saúde + muros entre projetos + portas + segredos
 //   node infra-config.mjs dashboards export     painéis do Grafana (UI) → container/grafana/dashboards/
+//   node infra-config.mjs secrets <projeto> --csproj=<caminho>   contrato do projeto → user-secrets da API (.NET)
 //
 // Opções: --env=<.env>  --only=postgres,redis,rabbitmq,keycloak,pgadmin (apply)
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
@@ -30,12 +32,12 @@ const opt = Object.fromEntries(
   })
 );
 const ENV_FILE = resolve(opt.env || join(CONTAINER, ".env"));
-const DRY = !!opt["dry-run"] || cmd === "diff" || cmd === "verify";   // verify nunca escreve (nem .env)
+const DRY = !!opt["dry-run"] || cmd === "diff" || cmd === "verify" || cmd === "secrets";   // nunca gera segredo no .env
 const ONLY = opt.only ? String(opt.only).split(",") : null;
 const wants = (svc) => !ONLY || ONLY.includes(svc);
 
-if (!["up", "apply", "diff", "verify", "dashboards"].includes(cmd) || (cmd === "dashboards" && args[0] !== "export")) {
-  console.error("uso: node infra-config.mjs <up|apply|diff|verify|dashboards export> [opções] — ver README.md");
+if (!["up", "apply", "diff", "verify", "dashboards", "secrets"].includes(cmd) || (cmd === "dashboards" && args[0] !== "export") || (cmd === "secrets" && (!args[0] || !opt.csproj))) {
+  console.error("uso: node infra-config.mjs <up|apply|diff|verify|dashboards export|secrets <projeto> --csproj=<caminho>> [opções] — ver README.md");
   process.exit(2);
 }
 
@@ -43,7 +45,7 @@ if (!["up", "apply", "diff", "verify", "dashboards"].includes(cmd) || (cmd === "
 const say = {
   step: (t) => console.log(`\n── ${t}`),
   ok: (t) => console.log(`  ✔ ${t}`),
-  change: (t) => console.log(`  ${DRY ? "~" : "+"} ${t}`),
+  change: (t) => console.log(`  ${DRY && cmd !== "secrets" ? "~" : "+"} ${t}`),
   skip: (t) => console.log(`  · ${t}`),
   warn: (t) => console.log(`  ! ${t}`),
   fail: (t) => console.log(`  ✘ ${t}`),
@@ -227,7 +229,7 @@ function render() {
   for (const p of PROJECTS) {
     const kv = projectSettings(p);
     const env = ["# gerado por ai-infra/configs/infra/infra-config.mjs — NÃO versionar, NÃO editar (refeito a cada apply)",
-      `# projeto: ${p.name}. .NET: Get-Content <este .json> | dotnet user-secrets set --project <csproj>`,
+      `# projeto: ${p.name}. .NET em dev: node ai-infra/configs/infra/infra-config.mjs secrets ${p.name} --csproj=<csproj da API>`,
       ...Object.entries(kv).map(([k, v]) => `${k.replace(/:/g, "__")}=${v}`)].join("\n") + "\n";
     writeGenerated(`projects/${p.name}.env`, env);
     writeGenerated(`projects/${p.name}.secrets.json`, JSON.stringify(kv, null, 2) + "\n");
@@ -617,6 +619,35 @@ async function exportDashboards() {
   console.log("\nrevisar com git diff e commitar.");
 }
 
+// ───────────────────────── secrets (user-secrets do .NET) ─────────────────────────
+// Grava o contrato do projeto direto no secrets.json do user-secrets, mesclando com o que já existe
+// (chave que o projeto pôs à mão continua). Sem pipe de shell: o PowerShell 5.1 põe BOM no stdin e o
+// `dotnet user-secrets set` recusa. Nunca imprime valor.
+function loadUserSecrets() {
+  const p = PROJECTS.find((x) => x.name === args[0]);
+  if (!p) throw new Error(`projeto "${args[0]}" não está em projects.json`);
+  const csproj = resolve(String(opt.csproj));
+  if (!existsSync(csproj)) throw new Error(`csproj não encontrado: ${csproj}`);
+  const id = readFileSync(csproj, "utf8").match(/<UserSecretsId>\s*([^<\s]+)\s*<\/UserSecretsId>/)?.[1];
+  if (!id) throw new Error(`${csproj} não tem <UserSecretsId> — rodar antes: dotnet user-secrets init --project "${csproj}" (muda o csproj: é do projeto, commit dele)`);
+
+  const kv = projectSettings(p);
+  const missing = Object.entries(kv).filter(([, v]) => /undefined|<seria-gerado>/.test(String(v))).map(([k]) => k);
+  if (missing.length) throw new Error(`segredos do projeto ainda não gerados (${missing.join(", ")}) — rodar antes: node infra-config.mjs apply`);
+
+  const dir = process.platform === "win32"
+    ? join(process.env.APPDATA, "Microsoft", "UserSecrets", id)
+    : join(homedir(), ".microsoft", "usersecrets", id);
+  const file = join(dir, "secrets.json");
+  const current = existsSync(file) ? JSON.parse(readFileSync(file, "utf8").replace(/^﻿/, "") || "{}") : {};
+  const changed = Object.keys(kv).filter((k) => current[k] !== kv[k]);
+  if (!changed.length) return say.ok(`${p.name}: user-secrets já em dia (${Object.keys(kv).length} chaves)`);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(file + ".tmp", JSON.stringify({ ...current, ...kv }, null, 2) + "\n");   // UTF-8 sem BOM
+  renameSync(file + ".tmp", file);
+  say.change(`${p.name}: ${changed.length} chave(s) gravada(s) no user-secrets ${id}: ${changed.join(", ")}`);
+}
+
 // ───────────────────────── comandos ─────────────────────────
 async function apply() {
   resolveSecrets();
@@ -655,6 +686,7 @@ try {
   else if (cmd === "apply" || cmd === "diff") await apply();
   else if (cmd === "verify") { resolveSecrets(); process.exitCode = (await verify()) ? 1 : 0; }
   else if (cmd === "dashboards") await exportDashboards();
+  else if (cmd === "secrets") { resolveSecrets(); loadUserSecrets(); }
 } catch (e) {
   console.error(`\n✘ ${e.message}`);
   process.exitCode = 1;

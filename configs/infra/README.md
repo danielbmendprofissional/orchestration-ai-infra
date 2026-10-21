@@ -21,6 +21,7 @@ node infra-config.mjs diff        # o que o apply mudaria (não muda nada, nem o
 node infra-config.mjs apply       # manifesto/.env → instâncias (só os serviços que estão de pé)
 node infra-config.mjs verify      # saúde + muros entre projetos + portas + segredos; sai com erro se algo falhar
 node infra-config.mjs dashboards export   # painel ajustado na UI do Grafana → container/grafana/dashboards/
+node infra-config.mjs secrets <projeto> --csproj=<csproj da API>   # contrato do projeto → user-secrets do .NET (mescla, sem BOM)
 node infra-versions.mjs check     # versão nova de cada imagem (só leitura; quem atualiza é o agent infra-versions-config)
 ```
 
@@ -87,7 +88,7 @@ Opções, quando o projeto precisa fugir do padrão:
 
 Gerado = 48 caracteres hex, gravado no `.env` na primeira vez e nunca impresso. Para trocar, apagar a linha e rodar `apply`, que gera uma nova e reaplica em todo lugar. Perder o `.env` não perde a infra: preencher de novo os logins de admin e rodar `apply` regenera e reaplica todas as senhas de máquina (depois recarregar o user-secrets dos projetos). O que **não** se recupera são as chaves de provider do OmniRoute — por isso o backup do `.env`.
 
-O app do projeto não lê o `.env` da infra. Ele recebe `container/generated/projects/<projeto>.secrets.json` (formato .NET) e `<projeto>.env` (formato variável de ambiente), com os nomes do contrato em `ai-base/docs/agents/infra-local.md`.
+O app do projeto não lê o `.env` da infra. Ele recebe `container/generated/projects/<projeto>.secrets.json` (formato .NET) e `<projeto>.env` (formato variável de ambiente), com os nomes do contrato em `ai-base/docs/agents/infra-local.md`. Em dev .NET, `secrets <projeto> --csproj=...` grava isso direto no user-secrets da API — não usar `Get-Content ... | dotnet user-secrets set` (no PowerShell 5.1 o pipe põe BOM e o `dotnet` recusa).
 
 ## Observabilidade
 
