@@ -1,0 +1,33 @@
+{
+  "projects": {
+    "valuto": {
+      "postgres": {
+        "roles": "project",
+        "memberPattern": "vp\\_%",
+        "initScript": "banco/valuto/init-db.sql"
+      },
+      "rabbitmq": {},
+      "redis": {},
+      "keycloak": {
+        "realmRoles": ["user", "admin"],
+        "defaultRoles": ["user"],
+        "serviceAccountRoles": ["realm-management/manage-users", "realm-management/view-users", "realm-management/query-users"],
+        "redirectUris": ["http://localhost:5000/api/v1/identity/auth/callback"],
+        "postLogoutRedirectUris": ["http://localhost:4200/*"],
+        "devUsers": [{ "username": "dev", "roles": ["user", "admin"] }]
+      },
+      "metrics": "host.docker.internal:5000"
+    },
+    "esteira": {
+      "postgres": {},
+      "rabbitmq": {},
+      "redis": {},
+      "keycloak": {
+        "redirectUris": ["http://localhost:4200/api/v1/auth/callback"],
+        "postLogoutRedirectUris": ["http://localhost:4200/*"],
+        "devUsers": [{ "username": "dev" }]
+      },
+      "metrics": "host.docker.internal:5105"
+    }
+  }
+}

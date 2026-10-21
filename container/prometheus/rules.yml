@@ -1,0 +1,33 @@
+# Alertas da infra local. Sem Alertmanager: aparecem em Prometheus → Alerts e no Grafana
+# (Alerting → fonte Prometheus). Limiares de dev, não de produção.
+
+groups:
+  - name: infra
+    rules:
+      - alert: AlvoFora
+        expr: up == 0
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.job }} ({{ $labels.instance }}) não responde há 2 min"
+
+      - alert: PostgresConexoesAltas
+        expr: sum(pg_stat_database_numbackends) / max(pg_settings_max_connections) > 0.8
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Postgres usando mais de 80% de max_connections"
+
+      - alert: RedisMemoriaAlta
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85 and redis_memory_max_bytes > 0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Redis acima de 85% do maxmemory (noeviction: escrita vai falhar quando encher)"
+
+      - alert: RabbitFilaAcumulando
+        expr: sum by (vhost, queue) (rabbitmq_detailed_queue_messages_ready) > 1000
+        for: 10m
+        labels: { severity: info }
+        annotations:
+          summary: "Fila {{ $labels.queue }} ({{ $labels.vhost }}) com mais de 1000 mensagens paradas"

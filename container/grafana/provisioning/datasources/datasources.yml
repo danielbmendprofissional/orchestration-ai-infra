@@ -1,0 +1,25 @@
+# Fontes de dados do Grafana — provisionadas, não editáveis pela UI (editar aqui e reiniciar o grafana).
+# uid fixo: os painéis em grafana/dashboards/ referenciam por uid.
+apiVersion: 1
+
+prune: true
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: 15s
+
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      maxLines: 5000

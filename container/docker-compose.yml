@@ -1,41 +1,80 @@
+# Infra compartilhada de dev local — uma instância, vários projetos, cada um na sua "casa".
+#
+# Este arquivo é só a planta dos serviços. O conteúdo (bancos, vhosts, realms, usuários, ACLs,
+# muros entre projetos) vem de ../configs/infra/ — subir SEMPRE por lá:
+#     node ../configs/infra/infra-config.mjs up
+# (`docker compose up` puro sobe os containers, mas não cria nada dos projetos nem os arquivos
+# de generated/, e o redis não sobe sem generated/redis/users.acl.)
+#
+# Regras fixas deste arquivo:
+#   - toda porta só em 127.0.0.1 — nada exposto na rede (Wi-Fi, LAN)
+#   - imagem com versão fixa — upgrade só pelo agent ai-ops/agents/infra/infra-versions-config
+#   - cada serviço recebe só os segredos dele (environment explícito, nunca env_file: .env)
+
 name: infra
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   postgres:
     build:
-      context: ./files/postgres
+      context: ./postgres
+    image: infra-postgres:17.11
     container_name: postgres
     restart: unless-stopped
     shm_size: 128mb   # valor de dev local
     stop_grace_period: 1m
-    env_file:
-      - .env
-    command: postgres -c shared_preload_libraries=pgaudit -c pgaudit.log=ddl,write
+    logging: *logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # bancos/roles/extensões dos projetos: infra-config.mjs (reconcilia sempre, não só no volume vazio)
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pgaudit
+      - -c
+      - pgaudit.log=ddl,role,write
+      - -c
+      - log_connections=on
+      - -c
+      - log_disconnections=on
+      - -c
+      - password_encryption=scram-sha-256
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - infra_pgdata:/var/lib/postgresql/data
-      - ../banco/00-global-databases.sql:/docker-entrypoint-initdb.d/00-global-databases.sql:ro
-      - ../banco/valuto/init-db.sql:/docker-entrypoint-initdb.d/01-init-valuto-db.sql:ro
-      - ../banco/02-enable-pgaudit.sql:/docker-entrypoint-initdb.d/02-enable-pgaudit.sql:ro
     networks:
       - infra-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:9.17
     container_name: pgadmin
     restart: unless-stopped
-    env_file:
-      - .env
+    logging: *logging
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_DISABLE_POSTFIX: "true"
+      PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: "False"
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "True"
+      # servidores (um grupo por projeto) — gerado por infra-config.mjs; o apply recarrega a cada rodada
+      PGADMIN_SERVER_JSON_FILE: /infra/servers.json
     ports:
-      - "15432:80"
+      - "127.0.0.1:15432:80"
     volumes:
       - infra_pgadmin_data:/var/lib/pgadmin
+      - ./generated/pgadmin:/infra:ro
     networks:
       - infra-network
     depends_on:
@@ -43,33 +82,64 @@ services:
         condition: service_healthy
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.0
+    image: quay.io/keycloak/keycloak:26.0.8
     container_name: keycloak
     restart: unless-stopped
     command: start-dev
-    env_file:
-      - .env
+    logging: *logging
     environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: ${POSTGRES_USER}
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_DB_USERNAME: keycloak                     # role própria, dona só do banco keycloak (não o superusuário)
+      KC_DB_PASSWORD: ${PG_KEYCLOAK_PASSWORD}
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"                   # :9000/metrics, só na rede interna (Prometheus)
+      KC_LOG_CONSOLE_OUTPUT: json
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    networks:
+      - infra-network
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - infra-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
+  # Redis dos projetos: usuário "default" desligado, um usuário ACL por projeto restrito a "<projeto>:*".
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine
     container_name: redis
     restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    logging: *logging
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - infra_redisdata:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./generated/redis:/usr/local/etc/redis/acl:ro
+    networks:
+      - infra-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "--user", "healthcheck", "--pass", "-", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Redis só do OmniRoute: ele não é projeto, e a imagem é de terceiro — fica fora do Redis dos projetos.
+  # Sem porta publicada, sem persistência (cache).
+  omniroute-redis:
+    image: redis:7.4.11-alpine
+    container_name: omniroute-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${OMNIROUTE_REDIS_PASSWORD}", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    logging: *logging
     networks:
       - infra-network
 
@@ -81,9 +151,10 @@ services:
     container_name: omniroute
     restart: unless-stopped
     stop_grace_period: 40s
+    logging: *logging
     environment:
       DATA_DIR: /app/data
-      REDIS_URL: redis://redis:6379/15   # db 15 reservado pro omniroute, projetos usam ACL por prefixo no db 0
+      REDIS_URL: redis://:${OMNIROUTE_REDIS_PASSWORD}@omniroute-redis:6379/0
       REQUIRE_API_KEY: "true"
       INITIAL_PASSWORD: ${OMNIROUTE_INITIAL_PASSWORD}
       OMNIROUTE_MEMORY_MB: "2048"        # recomendado pra 1 usuário rodando coding agents
@@ -93,7 +164,7 @@ services:
     volumes:
       - infra_omniroute_data:/app/data
     depends_on:
-      - redis
+      - omniroute-redis
     networks:
       - infra-network
     healthcheck:
@@ -104,35 +175,60 @@ services:
       start_period: 20s
 
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:3.13.7-management-alpine
     container_name: rabbitmq
+    hostname: rabbitmq   # o diretório de dados é por nome de nó — fixo pra o volume valer entre recriações
     restart: unless-stopped
-    env_file:
-      - .env
+    logging: *logging
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - infra_rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/conf.d/90-infra.conf:ro
     networks:
       - infra-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.15.0
     container_name: prometheus
     restart: unless-stopped
+    logging: *logging
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - ./generated/prometheus:/etc/prometheus/generated:ro
       - infra_prometheus_data:/prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # /metrics das APIs rodando no host
     networks:
       - infra-network
 
   postgres_exporter:
-    image: prometheuscommunity/postgres-exporter:latest
+    image: prometheuscommunity/postgres-exporter:v0.20.1
     container_name: postgres_exporter
     restart: unless-stopped
+    logging: *logging
     environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable"
+      DATA_SOURCE_URI: "postgres:5432/postgres?sslmode=disable"
+      DATA_SOURCE_USER: monitoring              # role com pg_monitor, não o superusuário
+      DATA_SOURCE_PASS: ${PG_MONITORING_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
@@ -140,60 +236,91 @@ services:
       - infra-network
 
   redis_exporter:
-    image: oliver006/redis_exporter:latest
+    image: oliver006/redis_exporter:v1.92.1
     container_name: redis_exporter
     restart: unless-stopped
+    logging: *logging
     environment:
-      REDIS_ADDR: "redis:6379"
+      REDIS_ADDR: "redis://redis:6379"
+      REDIS_USER: exporter                       # usuário ACL só de leitura de métricas
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD}
     depends_on:
       - redis
     networks:
       - infra-network
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.7.8
     container_name: loki
     restart: unless-stopped
-    command: -config.file=/etc/loki/loki-config.yaml
+    logging: *logging
+    command: -config.file=/etc/loki/loki.yaml
     volumes:
-      - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - ./loki/loki.yaml:/etc/loki/loki.yaml:ro
       - infra_loki_data:/loki
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     networks:
       - infra-network
 
   alloy:
-    image: grafana/alloy:latest
+    image: grafana/alloy:v1.20.1
     container_name: alloy
     restart: unless-stopped
-    command: run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.alloy
+    logging: *logging
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data    # posição de leitura de cada container persiste (não reenvia log velho)
+      - --disable-reporting
+      - /etc/alloy/config.alloy
     volumes:
-      - ./alloy-config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - infra_alloy_data:/var/lib/alloy/data
+    ports:
+      - "127.0.0.1:12345:12345"   # UI do Alloy
+      - "127.0.0.1:4317:4317"     # OTLP gRPC (log de app fora do Docker)
+      - "127.0.0.1:4318:4318"     # OTLP HTTP
     depends_on:
       - loki
     networks:
       - infra-network
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.2.2
     container_name: grafana
     restart: unless-stopped
-    env_file:
-      - .env
+    logging: *logging
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: http://localhost:3000
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+      GF_LOG_CONSOLE_FORMAT: json
     volumes:
       - infra_grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - prometheus
       - loki
     networks:
       - infra-network
 
+  # Falco (detecção de comportamento suspeito em runtime, via kernel). Não roda no Docker Desktop/WSL2
+  # (sem driver/eBPF) — fica aqui só como lembrete, desligado pelo perfil. Reavaliar no cluster
+  # Kubernetes: ai-ops/PENDENCIAS.md. Subir à força: docker compose --profile falco up -d falco
   falco:
-    image: falcosecurity/falco-no-driver:latest
+    profiles: ["falco"]
+    image: falcosecurity/falco-no-driver:latest   # sem versão fixa de propósito: nunca subiu; fixar quando for usar
     container_name: falco
     restart: unless-stopped
     privileged: true
@@ -212,8 +339,10 @@ volumes:
   infra_pgdata:
   infra_pgadmin_data:
   infra_redisdata:
+  infra_rabbitmq_data:
   infra_prometheus_data:
   infra_loki_data:
+  infra_alloy_data:
   infra_grafana_data:
   infra_omniroute_data:
 

@@ -1,113 +1,54 @@
-# Infra
+# ai-infra
 
-Serviços de contexto compartilhados, rodando permanentemente na máquina do Daniel (uma instância só, não um compose por projeto) — Postgres, pgAdmin, Redis, RabbitMQ e Keycloak, em `container/docker-compose.yml`. Cada projeto novo (ex: os nascidos do `ai-base`) aponta sua connection string pra essa instância em vez de subir containers próprios; um banco por projeto dentro do mesmo Postgres, seguindo o padrão de `banco/valuto/init-db.sql` (schemas próprios via `\c <projeto>`).
+Infra compartilhada de **dev local**: uma instância de cada serviço, rodando permanentemente na máquina, servindo todos os projetos (um "bairro" onde cada projeto tem a sua casa e não enxerga a dos outros). Nenhum ambiente publicado aponta pra cá: qa/hml/produção rodam os serviços dentro do cluster de cada projeto (`ai-ops/docs-human/ai-base/infra.md`).
 
-## Decisão registrada em 2026-09-05 (ver `ai-base/docs/agents/infra-local.md` pro registro completo do lado do `ai-base`)
+| Serviço | Acesso (só `127.0.0.1`) | Casa de cada projeto |
+|---|---|---|
+| Postgres 17 + pgAudit | `localhost:5432` | banco + roles |
+| pgAdmin | http://localhost:15432 | grupo de servidores |
+| Keycloak | http://localhost:8080 | realm + client `<projeto>-api` |
+| Redis | `localhost:6379` | usuário ACL `<projeto>:*` |
+| RabbitMQ | `localhost:5672`, UI http://localhost:15672 | vhost + usuário |
+| Grafana | http://localhost:3000 | rótulo `project` |
+| Prometheus | http://localhost:9090 | rótulo `project` |
+| Loki / Alloy | `localhost:3100` / UI http://localhost:12345, OTLP `localhost:4317-4318` | rótulo `project` |
+| OmniRoute (gateway LLM do `pi`) | http://localhost:20128 | — |
 
-- **Kubernetes segue como meta**, mesmo não existindo nenhum manifesto ainda — hoje isto aqui é só Docker Compose de dev local (ver comentário `shm_size: 128mb # valor de dev local` no compose).
-- **`banco/valuto/` é específico do projeto Valuto**, não genérico — separação genérico/específico. Projetos novos ganham seu próprio `banco/<projeto>/init-db.sql` ao lado, não em cima do que já existe.
-- **Canônico de `banco/valuto/init-db.sql`: o repo do `valuto`.** O arquivo real que os devs editam é `valuto/backend/infra/banco/01-init-valuto-db.sql` (mais documentado, com comentários de ADR e o bloco de teste manual de isolamento entre schemas) — a cópia aqui em `ai-infra/` é só o que o Docker de fato monta via `docker-entrypoint-initdb.d`. Os dois já divergiram uma vez (comentários), então a convenção agora é: sempre que o script do `valuto` mudar, sincronizar aqui manualmente (repos vivem como pastas irmãs na mesma máquina):
-
-  ```powershell
-  Copy-Item "..\valuto\backend\infra\banco\01-init-valuto-db.sql" "banco\valuto\init-db.sql" -Force
-  ```
-
-  Sem automação por enquanto (1 projeto, poucas mudanças de schema) — se isso passar a doer, evolui pra um `sync-bancos.ps1` que copia de todos os `banco/<projeto>/` dos repos-projeto de uma vez. *(Decisão 2026-09-07.)*
-
----
-
-*O restante deste arquivo é o boilerplate padrão gerado pelo GitLab na criação do repositório — ainda não foi substituído por documentação própria.*
-
-# Infra
-
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## Estrutura
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/orchestration-ai/ai-infra.git
-git branch -M main
-git push -uf origin main
+configs/
+  infra/        projects.json (manifesto) + infra-config.mjs (up/apply/diff/verify) + infra-versions.mjs  → README.md
+  omniroute/    config do gateway de LLM (mesmo princípio, script próprio)                               → README.md
+  vscode/       profiles do VS Code
+container/
+  docker-compose.yml      planta dos serviços (versões fixas, portas em 127.0.0.1, segredos por serviço)
+  <ferramenta>/           config de cada uma (redis, rabbitmq, loki, alloy, prometheus, grafana, postgres/Dockerfile)
+  .env                    segredos (fora do git) — modelo em examples/env.example
+  generated/              derivado do manifesto (fora do git)
+banco/<projeto>/          SQL inicial de projeto que cria as próprias roles (ver abaixo)
+backup/                   backup do Postgres (pg_dump por banco + globals)
 ```
 
-## Integrate with your tools
+## Uso
 
-* [Set up project integrations](https://gitlab.com/orchestration-ai/ai-infra/-/settings/integrations)
+```powershell
+# máquina nova: copiar container\examples\env.example → container\.env e preencher os logins de admin
+cd configs\infra
+node infra-config.mjs up        # sobe, configura os projetos e verifica
+node infra-config.mjs verify    # a qualquer momento: saúde + muros
+```
 
-## Collaborate with your team
+Projeto novo: entrada em `configs/infra/projects.json` → `node infra-config.mjs apply`. Feito pelo agent `ai-ops/agents/infra/local-environment-config`. Detalhes, opções do manifesto e segredos: [configs/infra/README.md](configs/infra/README.md).
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+Atualizar versão de imagem: agent `ai-ops/agents/infra/infra-versions-config`.
 
-## Test and Deploy
+## `banco/valuto/`
 
-Use the built-in continuous integration in GitLab.
+Específico do Valuto (roles `vp_owner_*`/`vp_usu_*` por schema), rodado uma vez quando o banco nasce (`initScript` no manifesto). **Canônico: o repo do `valuto`** (`valuto/backend/infra/banco/01-init-valuto-db.sql`). Quando ele mudar, sincronizar aqui:
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+```powershell
+Copy-Item "..\valuto\backend\infra\banco\01-init-valuto-db.sql" "banco\valuto\init-db.sql" -Force
+```
 
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Projeto no padrão (`postgres.roles: "infra"`) não precisa de pasta aqui: owner/app vêm do manifesto, e o schema é das migrations do próprio projeto.

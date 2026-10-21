@@ -1,0 +1,15 @@
+# Painéis versionados em grafana/dashboards/<pasta>/*.json — uma subpasta = uma pasta no Grafana
+# (infra/ e uma por projeto quando o projeto tiver painel próprio).
+# Dá pra ajustar pela UI (allowUiUpdates), mas o que vale é o arquivo: depois de ajustar,
+# `node configs/infra/infra-config.mjs dashboards export` grava de volta aqui → git diff → commit.
+apiVersion: 1
+
+providers:
+  - name: versionados
+    type: file
+    disableDeletion: true
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true

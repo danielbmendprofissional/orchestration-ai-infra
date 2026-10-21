@@ -1,0 +1,75 @@
+# Loki de dev local, um tenant só (auth_enabled: false): quem separa os projetos é o rótulo
+# "project" que o Alloy põe em cada linha. Porta só em 127.0.0.1 (docker-compose.yml).
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: info
+  grpc_server_max_concurrent_streams: 1000
+
+# Tudo dentro de /loki, que é o volume infra_loki_data — fora dele o log some ao recriar o container.
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# Retenção de 30 dias (decisão em ai-base/docs/agents/observabilidade-backup.md), aplicada pelo compactor.
+limits_config:
+  retention_period: 720h
+  max_query_lookback: 720h
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  allow_structured_metadata: true
+  discover_log_levels: true
+  volume_enabled: true
+  metric_aggregation_enabled: true
+  # log via OTLP (app fora do Docker): o atributo "project" que o Alloy põe vira rótulo, igual ao dos containers
+  otlp_config:
+    resource_attributes:
+      attributes_config:
+        - action: index_label
+          attributes: [project]
+
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  delete_request_store: filesystem
+
+pattern_ingester:
+  enabled: true
+  metric_aggregation:
+    loki_address: localhost:3100
+
+frontend:
+  encoding: protobuf
+
+analytics:
+  reporting_enabled: false

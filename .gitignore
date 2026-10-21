@@ -15,3 +15,5 @@ Claude outputs/
 Claude outputs
 # escrita atômica do omniroute-config.mjs (contém segredo se sobrar de execução interrompida)
 **/.env.tmp
+# derivados do configs/infra/infra-config.mjs (contêm hash/segredo de projeto) — refeitos a cada apply
+container/generated/

@@ -1,0 +1,81 @@
+// Coleta de log da infra e dos projetos → Loki.
+// Duas entradas:
+//   1. stdout de todo container Docker (infra e projeto rodando em container)
+//   2. OTLP em 127.0.0.1:4317/4318 — app rodando fora do Docker (dotnet run / ng serve)
+// Todo log sai com o rótulo "project": é ele que separa os projetos no Grafana.
+
+// ───── 1. containers ─────
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service_name"
+  }
+  // project = rótulo "project" do container; sem ele, o nome do compose ("infra" pra esta stack)
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "project"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_project"]
+    regex         = "(.+)"
+    target_label  = "project"
+  }
+}
+
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.write.default.receiver]
+}
+
+// ───── 2. OTLP (apps fora do Docker) ─────
+// O app manda OTEL_RESOURCE_ATTRIBUTES=service.namespace=<projeto>,service.name=<projeto>-api
+// (vem pronto em generated/projects/<projeto>.env).
+otelcol.receiver.otlp "apps" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    logs = [otelcol.processor.transform.project.input]
+  }
+}
+
+// service.namespace vira o rótulo "project", igual ao dos containers
+otelcol.processor.transform "project" {
+  error_mode = "ignore"
+  log_statements {
+    context    = "resource"
+    statements = [`set(attributes["project"], attributes["service.namespace"]) where attributes["service.namespace"] != nil`]
+  }
+  output {
+    logs = [otelcol.exporter.otlphttp.loki.input]
+  }
+}
+
+otelcol.exporter.otlphttp "loki" {
+  client {
+    endpoint = "http://loki:3100/otlp"
+  }
+}
+
+// ───── saída ─────
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
