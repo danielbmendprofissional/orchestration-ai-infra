@@ -143,7 +143,7 @@ services:
     networks:
       - infra-network
 
-  # Gateway de LLM (OpenAI-compatible) na frente dos executores do pi.dev — combos e
+  # Gateway de LLM (OpenAI e Anthropic-compatible) dos modos claude-pago/claude-free — combos e
   # decisões em ../configs/omniroute/combos.md. Guarda chave de provider: porta só em
   # 127.0.0.1 e REQUIRE_API_KEY=true, nunca expor na rede.
   omniroute:

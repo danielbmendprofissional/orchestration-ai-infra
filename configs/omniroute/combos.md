@@ -9,7 +9,7 @@ Sem segredo neste arquivo nem em `config/`: chave de provider e valor de API key
 1. **Só provider com API key.** Nunca OAuth de assinatura (Claude Pro, ChatGPT Plus, Antigravity/`agy/*`) — rotear assinatura pessoal por proxy viola ToS e é o que bane conta. Claude Code fica fora do OmniRoute, direto na assinatura.
 2. **Free primeiro, pago por último.** DeepSeek e OpenAI são pré-pagos (recarga automática desligada) — o saldo é o teto de gasto.
 3. **Failover dentro do mesmo nível de qualidade.** O mesmo modelo em vários providers (`deepseek-v4.1-flash` via ollama-cloud/nvidia/bazaarlink/openrouter) é o failover ideal: contorna limite sem trocar qualidade.
-4. **Conversa fixa num alvo.** Subagent do `pi` é uma conversa multi-turn com tool calls — trocar de modelo a cada request perde prompt cache e muda comportamento no meio da task. Estratégia dentro de pool free: `lkgp` (fixa no último alvo que funcionou, só troca quando ele falha). `quota-weighted` seria melhor (balanceia carga entre sessões paralelas mantendo a conversa fixa), mas **não existe na 3.8.51** (só no README de versões mais novas) — reavaliar no próximo upgrade. `round-robin` nunca.
+4. **Conversa fixa num alvo.** Sessão ou subagente do Claude Code é uma conversa multi-turn com tool calls — trocar de modelo a cada request perde prompt cache e muda comportamento no meio da task. Estratégia dentro de pool free: `lkgp` (fixa no último alvo que funcionou, só troca quando ele falha). `quota-weighted` seria melhor (balanceia carga entre sessões paralelas mantendo a conversa fixa), mas **não existe na 3.8.51** (só no README de versões mais novas) — reavaliar no próximo upgrade. `round-robin` nunca.
 5. **A ordem abaixo é estimativa** (porte/família do modelo). Ela é substituída pelo ranking real do `ai-ops/tools/omniroute-eval` assim que ele rodar — ver seção "Ranking".
 
 ## Combos
@@ -27,7 +27,7 @@ Estratégia: `lkgp` (ver princípio 4). Ordem pelo eval de 2026-10-19 (ver "Rank
 
 ### `pi-exec` — executor geral
 
-Estratégia: `priority`, `nestedComboMode: execute` (o pool roda com a própria estratégia). Usado por `data`, `backend`, `front`, `ui`, `tests`.
+Estratégia: `priority`, `nestedComboMode: execute` (o pool roda com a própria estratégia). Usado por `tests` e tarefa corriqueira (o código vai no `pi-code`).
 
 | # | Alvo |
 |---|---|
@@ -48,15 +48,18 @@ Estratégia: `lkgp`, `nestedComboMode: execute`. Usado por `qa`. Sem modelo pago
 | 4 | `cloudflare-ai/@cf/google/gemma-4-26b-a4b-it` |
 | 5 | combo `pool-exec-free` (se o nível leve inteiro estiver esgotado) |
 
-### `pi-quality` — review e segurança
+### `pi-code` e `pi-quality` — só pagos (código, pai, review, segurança)
 
-Estratégia: `priority`. Usado por `review`, `security`.
+Estratégia: `priority`, `failoverBeforeRetry: false`, `maxRetries: 3`, `retryDelayMs: 3000` — falha tenta o **mesmo** modelo 3x antes de trocar. `pi-code`: `data`, `backend`, `front`, `ui` e o agente-pai. `pi-quality`: `review`, `security`. **Sem modelo free** (2026-10-24: o Nemotron no fim do `pi-quality` fez quase todo o trabalho das primeiras rodadas sem ninguém ver).
 
 | # | Alvo |
 |---|---|
-| 1 | `openai/gpt-5.6-luna` (pago) |
-| 2 | `deepseek/deepseek-v4-flash` (pago) |
-| 3 | `nvidia/nvidia/nemotron-3-ultra-550b-a55b` (free, só se os dois pagos falharem) |
+| 1 | `deepseek/deepseek-v4-flash` (pago) |
+| 2 | `openai/gpt-5.6-luna` (pago) |
+
+**DeepSeek primeiro e `reasoning_effort: "none"`:** no modo de raciocínio o DeepSeek exige o `reasoning_content` de cada turno anterior; conversa que começou na Luna e cai pra ele recebe 400 (o OmniRoute descarta `reasoning_content: ""`). Com `reasoning_effort: "none"` os dois aceitam o histórico um do outro, nos dois sentidos (testado 2026-10-24). O `pi` manda `none` sempre: em `~/.pi/agent/models.json`, os modelos `pi-code`/`pi-quality` têm `reasoning: true`, `compat.supportsReasoningEffort: true` e `thinkingLevelMap` todo em `none`.
+
+**Kaspersky:** inspeciona HTTPS e o container não confia na raiz dele (`SELF_SIGNED_CERT_IN_CHAIN`, intermitente) — derrubava o pago e o combo caía no free. Exceção no Kaspersky: aplicativo `com.docker.backend.exe`, "Não verificar todo o tráfego" só na porta 443.
 
 ### `harness` — código do trabalho (DeepSeek Harness)
 
@@ -74,7 +77,7 @@ Estratégia: `priority`. Usado por `review`, `security`.
 | `mistral/mistral-small-2603` | 429 nas 3 tarefas | reavaliar no próximo eval |
 | `gemini/gemini-2.5-pro-preview-tts`, `bazaarlink/auto:free`, `glm/glm-4.7` | voz / aleatório / sem saldo (decisão de 2026-10-18) | — |
 
-Pool free ficou fino (4 modelos, 3 providers): com 4 sessões `pi` em paralelo, o DeepSeek pago vai ser acionado mais vezes que o planejado — acompanhar o saldo.
+Pool free ficou fino (4 modelos, 3 providers): com várias sessões `claude-free` em paralelo, o DeepSeek pago vai ser acionado mais vezes que o planejado — acompanhar o saldo.
 
 ## Configurações globais
 
@@ -85,12 +88,14 @@ Pool free ficou fino (4 modelos, 3 providers): com 4 sessões `pi` em paralelo, 
 | `semanticCacheEnabled` | `false` | Em trabalho agentic, prompt parecido com contexto diferente pode receber resposta velha — risco direto pro TDD |
 | `promptCacheEnabled` | `true` | Cache de prefixo do próprio provider: corta custo sem risco de resposta velha |
 | `context_cache_protection` | `true` nos combos `pi-*` | |
+| `modelLockout` | só 403/404/429; 15s, máx. 2 min | erro de rede (502/503/504) é passageiro — antes travava até 30 min e tirava o pago da sessão |
+| `modelLockout` | só 403/404/429, 15s → máx. 2 min | erro de rede (502/503/504) é passageiro; antes travava até 30 min e tirava o pago da sessão |
 
 ## API keys de cliente
 
 | Nome | Uso | Acesso |
 |---|---|---|
-| `pi` | `pi.dev` (variável `OMNIROUTE_API_KEY`) | combos `pi-exec`, `pi-light`, `pi-quality` |
+| `pi` | modos `claude-pago`/`claude-free` do Claude Code (variável `OMNIROUTE_API_KEY`, lida pelo `apiKeyHelper` de `~/.claude/modos/`). Nome e prefixo `pi-*` dos combos são históricos (do pi.dev, removido em 2026-10-24) — renomear gera chave nova | combos `pi-code`, `pi-exec`, `pi-light`, `pi-quality` |
 | `eval` | `ai-ops/tools/omniroute-eval` | modelos individuais (sem combo) |
 | `harness-geral` | DeepSeek Harness | pendente (ver `harness` acima) |
 

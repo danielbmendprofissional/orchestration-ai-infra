@@ -337,26 +337,21 @@
     ]
   },
   {
-    "name": "pi-quality",
+    "name": "pi-code",
     "strategy": "priority",
     "context_cache_protection": true,
     "config": {
-      "failoverBeforeRetry": true,
+      "failoverBeforeRetry": false,
       "handoffModel": "",
       "handoffThreshold": 0.85,
       "maxMessagesForSummary": 30,
-      "maxRetries": 1,
+      "maxRetries": 3,
       "reasoningTokenBufferEnabled": true,
-      "retryDelayMs": 2000,
+      "retryDelayMs": 3000,
       "trackMetrics": true,
       "zeroLatencyOptimizationsEnabled": false
     },
     "models": [
-      {
-        "kind": "model",
-        "providerId": "openai",
-        "model": "openai/gpt-5.6-luna"
-      },
       {
         "kind": "model",
         "providerId": "deepseek",
@@ -364,8 +359,36 @@
       },
       {
         "kind": "model",
-        "providerId": "nvidia",
-        "model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+        "providerId": "openai",
+        "model": "openai/gpt-5.6-luna"
+      }
+    ]
+  },
+  {
+    "name": "pi-quality",
+    "strategy": "priority",
+    "context_cache_protection": true,
+    "config": {
+      "failoverBeforeRetry": false,
+      "handoffModel": "",
+      "handoffThreshold": 0.85,
+      "maxMessagesForSummary": 30,
+      "maxRetries": 3,
+      "reasoningTokenBufferEnabled": true,
+      "retryDelayMs": 3000,
+      "trackMetrics": true,
+      "zeroLatencyOptimizationsEnabled": false
+    },
+    "models": [
+      {
+        "kind": "model",
+        "providerId": "deepseek",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      {
+        "kind": "model",
+        "providerId": "openai",
+        "model": "openai/gpt-5.6-luna"
       }
     ]
   }

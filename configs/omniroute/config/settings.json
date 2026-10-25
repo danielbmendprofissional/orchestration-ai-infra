@@ -55,18 +55,15 @@
   "maxRetryIntervalSec": 30,
   "mcpEnabled": false,
   "modelLockout": {
-    "baseCooldownMs": 120000,
+    "baseCooldownMs": 15000,
     "enabled": true,
     "errorCodes": [
       403,
       404,
-      429,
-      502,
-      503,
-      504
+      429
     ],
     "maxBackoffSteps": 10,
-    "maxCooldownMs": 1800000,
+    "maxCooldownMs": 120000,
     "useExponentialBackoff": true
   },
   "oidcAllowedSubjects": [],

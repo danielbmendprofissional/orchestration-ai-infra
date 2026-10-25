@@ -12,7 +12,7 @@ Infra compartilhada de **dev local**: uma instância de cada serviço, rodando p
 | Grafana | http://localhost:3000 | rótulo `project` |
 | Prometheus | http://localhost:9090 | rótulo `project` |
 | Loki / Alloy | `localhost:3100` / UI http://localhost:12345, OTLP `localhost:4317-4318` | rótulo `project` |
-| OmniRoute (gateway LLM do `pi`) | http://localhost:20128 | — |
+| OmniRoute (gateway LLM dos modos `claude-pago`/`claude-free`) | http://localhost:20128 | — |
 
 ## Estrutura
 
