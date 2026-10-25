@@ -25,7 +25,11 @@
       "keycloak": {
         "redirectUris": ["http://localhost:4200/api/v1/auth/callback"],
         "postLogoutRedirectUris": ["http://localhost:4200/*"],
-        "devUsers": [{ "username": "dev" }]
+        "realmRoles": ["mor"],
+        "devUsers": [
+          { "username": "dev", "roles": ["mor"] },
+          { "username": "dev-sem-papel" }
+        ]
       },
       "metrics": "host.docker.internal:5105"
     }
