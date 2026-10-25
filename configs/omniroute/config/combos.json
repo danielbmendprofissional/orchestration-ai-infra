@@ -266,7 +266,7 @@
     ]
   },
   {
-    "name": "pi-exec",
+    "name": "omni-free",
     "strategy": "priority",
     "context_cache_protection": true,
     "config": {
@@ -294,7 +294,7 @@
     ]
   },
   {
-    "name": "pi-light",
+    "name": "omni-light",
     "strategy": "lkgp",
     "context_cache_protection": true,
     "config": {
@@ -337,7 +337,7 @@
     ]
   },
   {
-    "name": "pi-code",
+    "name": "omni-pago",
     "strategy": "priority",
     "context_cache_protection": true,
     "config": {
@@ -365,7 +365,7 @@
     ]
   },
   {
-    "name": "pi-quality",
+    "name": "omni-review",
     "strategy": "priority",
     "context_cache_protection": true,
     "config": {

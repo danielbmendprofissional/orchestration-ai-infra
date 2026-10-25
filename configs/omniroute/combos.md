@@ -25,9 +25,9 @@ Estratégia: `lkgp` (ver princípio 4). Ordem pelo eval de 2026-10-19 (ver "Rank
 | 3 | `openrouter/nvidia/nemotron-3-ultra-550b-a55b:free` | 3/3, mesmo modelo, outro provider (write-test lento: 200s) |
 | 4 | `groq/openai/gpt-oss-120b` | 2/3, o mais rápido (~3s) — falhou só em escrever teste |
 
-### `pi-exec` — executor geral
+### `omni-free` — executor geral
 
-Estratégia: `priority`, `nestedComboMode: execute` (o pool roda com a própria estratégia). Usado por `tests` e tarefa corriqueira (o código vai no `pi-code`).
+Estratégia: `priority`, `nestedComboMode: execute` (o pool roda com a própria estratégia). Usado por `tests` e tarefa corriqueira (o código vai no `omni-pago`).
 
 | # | Alvo |
 |---|---|
@@ -36,7 +36,7 @@ Estratégia: `priority`, `nestedComboMode: execute` (o pool roda com a própria 
 
 Combo dentro de combo é suportado na 3.8.51 (passo `"kind": "combo-ref"`), testado. Sem `nestedComboMode: execute` o OmniRoute achata o pool e ignora o `lkgp` dele.
 
-### `pi-light` — tarefa mecânica
+### `omni-light` — tarefa mecânica
 
 Estratégia: `lkgp`, `nestedComboMode: execute`. Usado por `qa`. Sem modelo pago. Todos acertam ler/editar (2/3); nenhum passou em "escrever teste que pega bug" — por isso só `qa` usa este combo.
 
@@ -48,16 +48,16 @@ Estratégia: `lkgp`, `nestedComboMode: execute`. Usado por `qa`. Sem modelo pago
 | 4 | `cloudflare-ai/@cf/google/gemma-4-26b-a4b-it` |
 | 5 | combo `pool-exec-free` (se o nível leve inteiro estiver esgotado) |
 
-### `pi-code` e `pi-quality` — só pagos (código, pai, review, segurança)
+### `omni-pago` e `omni-review` — só pagos (código, pai, review, segurança)
 
-Estratégia: `priority`, `failoverBeforeRetry: false`, `maxRetries: 3`, `retryDelayMs: 3000` — falha tenta o **mesmo** modelo 3x antes de trocar. `pi-code`: `data`, `backend`, `front`, `ui` e o agente-pai. `pi-quality`: `review`, `security`. **Sem modelo free** (2026-10-24: o Nemotron no fim do `pi-quality` fez quase todo o trabalho das primeiras rodadas sem ninguém ver).
+Estratégia: `priority`, `failoverBeforeRetry: false`, `maxRetries: 3`, `retryDelayMs: 3000` — falha tenta o **mesmo** modelo 3x antes de trocar. `omni-pago`: `data`, `backend`, `front`, `ui` e o agente-pai. `omni-review`: `review`, `security`. **Sem modelo free** (2026-10-24: o Nemotron no fim do `omni-review` fez quase todo o trabalho das primeiras rodadas sem ninguém ver).
 
 | # | Alvo |
 |---|---|
 | 1 | `deepseek/deepseek-v4-flash` (pago) |
 | 2 | `openai/gpt-5.6-luna` (pago) |
 
-**DeepSeek primeiro e `reasoning_effort: "none"`:** no modo de raciocínio o DeepSeek exige o `reasoning_content` de cada turno anterior; conversa que começou na Luna e cai pra ele recebe 400 (o OmniRoute descarta `reasoning_content: ""`). Com `reasoning_effort: "none"` os dois aceitam o histórico um do outro, nos dois sentidos (testado 2026-10-24). O `pi` manda `none` sempre: em `~/.pi/agent/models.json`, os modelos `pi-code`/`pi-quality` têm `reasoning: true`, `compat.supportsReasoningEffort: true` e `thinkingLevelMap` todo em `none`.
+**DeepSeek primeiro e `reasoning_effort: "none"`:** no modo de raciocínio o DeepSeek exige o `reasoning_content` de cada turno anterior; conversa que começou na Luna e cai pra ele recebe 400 (o OmniRoute descarta `reasoning_content: ""`). Com `reasoning_effort: "none"` os dois aceitam o histórico um do outro, nos dois sentidos (testado 2026-10-24). Os modos `claude-pago`/`claude-free` desligam o raciocínio sempre (`MAX_THINKING_TOKENS: 0` em `~/.claude/modos/*.json`).
 
 **Kaspersky:** inspeciona HTTPS e o container não confia na raiz dele (`SELF_SIGNED_CERT_IN_CHAIN`, intermitente) — derrubava o pago e o combo caía no free. Exceção no Kaspersky: aplicativo `com.docker.backend.exe`, "Não verificar todo o tráfego" só na porta 443.
 
@@ -87,7 +87,7 @@ Pool free ficou fino (4 modelos, 3 providers): com várias sessões `claude-free
 | Pipeline de compressão padrão | só `rtk` (sem `caveman`) | idem |
 | `semanticCacheEnabled` | `false` | Em trabalho agentic, prompt parecido com contexto diferente pode receber resposta velha — risco direto pro TDD |
 | `promptCacheEnabled` | `true` | Cache de prefixo do próprio provider: corta custo sem risco de resposta velha |
-| `context_cache_protection` | `true` nos combos `pi-*` | |
+| `context_cache_protection` | `true` nos combos `omni-*` | |
 | `modelLockout` | só 403/404/429; 15s, máx. 2 min | erro de rede (502/503/504) é passageiro — antes travava até 30 min e tirava o pago da sessão |
 | `modelLockout` | só 403/404/429, 15s → máx. 2 min | erro de rede (502/503/504) é passageiro; antes travava até 30 min e tirava o pago da sessão |
 
@@ -95,7 +95,7 @@ Pool free ficou fino (4 modelos, 3 providers): com várias sessões `claude-free
 
 | Nome | Uso | Acesso |
 |---|---|---|
-| `pi` | modos `claude-pago`/`claude-free` do Claude Code (variável `OMNIROUTE_API_KEY`, lida pelo `apiKeyHelper` de `~/.claude/modos/`). Nome e prefixo `pi-*` dos combos são históricos (do pi.dev, removido em 2026-10-24) — renomear gera chave nova | combos `pi-code`, `pi-exec`, `pi-light`, `pi-quality` |
+| `claude-modos` | modos `claude-pago`/`claude-free` do Claude Code (variável `OMNIROUTE_API_KEY`, lida pelo `apiKeyHelper` de `~/.claude/modos/`) | combos `omni-pago`, `omni-free`, `omni-light`, `omni-review` |
 | `eval` | `ai-ops/tools/omniroute-eval` | modelos individuais (sem combo) |
 | `harness-geral` | DeepSeek Harness | pendente (ver `harness` acima) |
 

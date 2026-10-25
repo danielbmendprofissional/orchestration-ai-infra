@@ -102,7 +102,7 @@
     "isActive": true,
     "maxSessions": 0,
     "modelAccessMode": "all",
-    "name": "pi",
+    "name": "claude-modos",
     "noLog": false,
     "rateLimits": null,
     "scopes": [
