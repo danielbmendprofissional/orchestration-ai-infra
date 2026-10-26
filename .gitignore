@@ -17,3 +17,40 @@ Claude outputs
 **/.env.tmp
 # derivados do configs/infra/infra-config.mjs (contêm hash/segredo de projeto) — refeitos a cada apply
 container/generated/
+
+# ============================================================
+# Proteção contra vazamento (bloco padrão do ecossistema)
+# ============================================================
+# Segredos e credenciais
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.jks
+*.crt
+id_rsa*
+id_ed25519*
+kubeconfig
+.kube/
+*credentials*
+*.secrets.json
+*secrets*.yaml
+*secrets*.yml
+*.tfstate
+*.tfstate.*
+
+# Config local do Claude Code / MCP com valores reais (não versionar)
+.claude/settings.local.json
+.claude/*.local.*
+.mcp.local.json
+
+# Dumps e bancos locais
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
