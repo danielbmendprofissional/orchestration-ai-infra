@@ -32,6 +32,17 @@
         ]
       },
       "metrics": "host.docker.internal:5105"
+    },
+    "estudos": {
+      "postgres": {},
+      "rabbitmq": {},
+      "redis": {},
+      "keycloak": {
+        "redirectUris": ["http://localhost:4300/api/v1/auth/callback"],
+        "postLogoutRedirectUris": ["http://localhost:4300/*"],
+        "devUsers": [{ "username": "dev" }]
+      },
+      "metrics": "host.docker.internal:5205"
     }
   }
 }
