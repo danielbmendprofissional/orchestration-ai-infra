@@ -43,6 +43,9 @@
         "devUsers": [{ "username": "dev" }]
       },
       "metrics": "host.docker.internal:5205"
+    },
+    "aiagentfaculdade": {
+      "postgres": {}
     }
   }
 }
